@@ -14,3 +14,8 @@ The deck consists of chores based on the number of people and the types of tasks
 I've already made a basic version in JavaScript that uses local storage and is kind of fun. This version has the aim of getting some experience using Heroku, doing a bit of CI and some Go since that has been a while.
 
 
+## What happens where?
+
+The code is hosted on github. When I push Travis CI runs tests and a code coverage report which is then uploaded to CodeCov.io
+
+The thing then runs on Heroku
