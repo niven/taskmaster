@@ -1,4 +1,4 @@
-package taskmaster
+package main
 
 import (
 	"testing"

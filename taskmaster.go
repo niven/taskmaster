@@ -1,4 +1,4 @@
-package taskmaster
+package main
 
 func getAllTasks(domain int) []string {
 

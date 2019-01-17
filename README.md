@@ -30,16 +30,17 @@ The thing then runs on Heroku
 - install Go stuff
 	- go get -u github.com/gin-gonic/gin
 		- web framework
+	- set -x PATH $PATH $GOPATH/bin/
 
 - create a new repo on github
 - write some code + tests
 - go get -u github.com/kardianos/govendor
 	- so we can vendor things, and Heroku needs this for a buildpack
 	- https://gocodecloud.com/blog/2016/03/29/go-vendoring-beginner-tutorial/
-- eval $GOPATH/bin/govendor init
-	- fish shell wants the eval
+- govendor init
 	- git add -A vendor
 	- git commit -am "Setup Vendor"
+- govendor fetch github.com/gin-gonic/gin	
 - push to github
 - add the repo to travis CI / CodeCov
 - add a .travis.yml file with Codecov coverage upload
@@ -55,6 +56,17 @@ The thing then runs on Heroku
 - Tell Heroku we are a Go app
 	heroku buildpacks:set heroku/go
 - git push heroku master
+- add a Procfile
+	contents = web: taskmaster
+	
+#### Running locally
+
+go run main.go
+
+and/or
+
+go install
+heroku local
 
 
 # Ideas
