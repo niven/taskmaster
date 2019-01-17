@@ -1,6 +1,13 @@
 {
 	"comment": "",
 	"ignore": "test",
-	"package": [],
+	"package": [
+		{
+			"checksumSHA1": "9z+VuB/Jer7pZthtvQIA4vXOkDE=",
+			"path": "github.com/gin-gonic/gin",
+			"revision": "29a145c85dc0fafc3dd0ada62d856c4d95240010",
+			"revisionTime": "2019-01-09T01:32:44Z"
+		}
+	],
 	"rootPath": "taskmaster"
 }
