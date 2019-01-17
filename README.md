@@ -27,12 +27,19 @@ The thing then runs on Heroku
 
 ### initial setup
 
-- createt a new repo on github
+- install Go stuff
+	- go get -u github.com/gin-gonic/gin
+		- web framework
+
+- create a new repo on github
 - write some code + tests
 - go get -u github.com/kardianos/govendor
 	- so we can vendor things, and Heroku needs this for a buildpack
+	- https://gocodecloud.com/blog/2016/03/29/go-vendoring-beginner-tutorial/
 - eval $GOPATH/bin/govendor init
 	- fish shell wants the eval
+	- git add -A vendor
+	- git commit -am "Setup Vendor"
 - push to github
 - add the repo to travis CI / CodeCov
 - add a .travis.yml file with Codecov coverage upload
@@ -48,3 +55,8 @@ The thing then runs on Heroku
 - Tell Heroku we are a Go app
 	heroku buildpacks:set heroku/go
 - git push heroku master
+
+
+# Ideas
+
+Might be nice ot have a domain like tm.interdictor.org or somehting at least.
