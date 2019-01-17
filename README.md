@@ -19,3 +19,32 @@ I've already made a basic version in JavaScript that uses local storage and is k
 The code is hosted on github. When I push Travis CI runs tests and a code coverage report which is then uploaded to CodeCov.io
 
 The thing then runs on Heroku
+
+#### prerequisites
+
+- accounts: gitub, heroku, travis-ci.org, codecov.io (latter 2 through github)
+- Heroku, Git, Go, Postgres (+ CLI tools)
+
+### initial setup
+
+- createt a new repo on github
+- write some code + tests
+- go get -u github.com/kardianos/govendor
+	- so we can vendor things, and Heroku needs this for a buildpack
+- eval $GOPATH/bin/govendor init
+	- fish shell wants the eval
+- push to github
+- add the repo to travis CI / CodeCov
+- add a .travis.yml file with Codecov coverage upload
+- push to github, check Travis if everything builds
+- heroku apps:create
+	- unnamed app since app names are global
+	- I got: https://peaceful-everglades-27897.herokuapp.com/ | https://git.heroku.com/peaceful-everglades-27897.git
+- git remote -v
+	heroku	https://git.heroku.com/peaceful-everglades-27897.git (fetch)
+	heroku	https://git.heroku.com/peaceful-everglades-27897.git (push)
+	origin	git@github.com:niven/taskmaster (fetch)
+	origin	git@github.com:niven/taskmaster (push)	
+- Tell Heroku we are a Go app
+	heroku buildpacks:set heroku/go
+- git push heroku master
