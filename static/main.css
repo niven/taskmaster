@@ -1,0 +1,205 @@
+* {
+	margin: 0;
+	padding: 0;
+	font-family: "Proxima Nova", sans-serif;
+	font-size: xx-large;
+}
+
+html {
+	height: 100%;
+}
+
+body {
+	
+   background: 
+		repeating-linear-gradient(45deg,
+			transparent,
+			transparent 32px,
+			rgba(0,128,0, 0.5) 32px,
+			rgba(0,128,0, 0.5) 64px),
+	 	repeating-linear-gradient(-45deg,
+			transparent,
+			transparent 32px,
+			rgba(0,128,0, 0.5) 32px,
+			rgba(0,128,0, 0.5) 64px);		 
+
+	background-color: white;
+	height: 80%;
+	padding: 5%;
+}
+
+ul {
+/*	border: solid thin black;*/
+	padding-bottom: 1ex;
+}
+div {
+/*	border: solid thin red;*/
+}
+h1 {
+	text-align: center;
+	font-variant: small-caps;
+	padding: 1ex 0;
+}
+
+li {
+	list-style-type: none;
+	text-align: center;
+}
+li:hover {
+	background-color: deepskyblue;
+	cursor: pointer;
+}
+
+a {
+	text-decoration: none;
+	display: block;
+	font-size: xx-large;
+}
+a:visited {
+	color: black;
+}
+
+button {
+   background: black;
+   color: white;
+   cursor: pointer;	
+}
+
+#settings {
+	display: flex;
+}
+
+#controls {
+	height: 1em;
+}
+
+
+#main {
+	margin: 0 auto;
+	width: 80%;
+	background-color: mistyrose;
+}
+
+#state, #debug {
+	border: solid thin maroon;
+	display: none;
+}
+
+
+#late {
+	width: 100%;
+	margin-top: 2%;
+	display: flex;
+}
+
+#late div {
+	flex: 1 1 auto;
+}
+
+
+#this_week {
+	background-color: sandybrown;
+}
+
+#overdue {
+	background-color: lightsalmon;
+}
+
+ul#today {
+	width: 100%;
+	padding: 0;
+}
+
+ul#today li {
+	font-size: 200%;
+	text-align: center;
+}
+
+/************** Modal stuff down below ***********************/
+
+.modal {
+   display: none;
+	
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	
+	z-index: 1010;
+	
+	width: 80%;
+	max-width: 80%;
+	height: 80%;
+	max-height: 80%;
+	
+	display: block;
+		
+   background: lightgreen;
+	box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.9);
+}
+
+.modal-guts {
+	
+	/* cover the modal */
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
+
+	/* let it scroll */
+	overflow: auto;
+	
+}
+
+.modal-overlay {
+
+  /* recommendation:
+     don't focus on the number "1000" here, but rather,
+     you should have a documented system for z-index and 
+     follow that system. This number should be pretty
+     high on the scale in that system.
+  */
+	z-index: 1000;
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-guts .modal-button {
+  /* don't need to go crazy with z-index here, just sits over .modal-guts */
+  z-index: 1;
+    
+  border-radius: 2em;
+  
+  width: 40%;
+  min-height: 3em;
+  
+  flex: 0 0 auto;
+  
+  
+  margin: 0 auto;
+}
+
+.closed {
+  display: none;
+}
+
+.invisible {
+	visibility: hidden;
+}
+
+#modal-task-title {
+	font-size: 200%;
+}
+
+
