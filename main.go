@@ -13,9 +13,28 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
+
+func isAuthorized(c *gin.Context) bool {
+	session := sessions.Default(c)
+	v := session.Get("user-id")
+	return v != nil
+}
+
+// AuthorizeRequest is used to authorize a request for a certain end-point group.
+func AuthorizeRequest() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if isAuthorized(c) {
+			c.Next()
+		} else {
+			c.HTML(http.StatusUnauthorized, "error.tmpl.html", gin.H{"message": "Please login."})
+			c.Abort()
+		}
+	}
+}
 
 // User is a retrieved and authenticated user
 type User struct {
@@ -66,9 +85,16 @@ func authHandler(c *gin.Context) {
 		fmt.Println("error:", err)
 	}
 
-	c.HTML(http.StatusOK, "main.tmpl.html", gin.H{
-		"name": user.Name,
-	})
+	session.Set("user-id", user.Email)
+	err = session.Save()
+	if err != nil {
+		log.Println(err)
+		c.HTML(http.StatusBadRequest, "error.tmpl.html", gin.H{"message": "Error while saving session. Please try again."})
+		return
+	}
+
+	c.HTML(http.StatusOK, "index.tmpl.html", nil)
+
 }
 
 func randToken() string {
@@ -81,13 +107,20 @@ func getLoginURL(state string) string {
 	return conf.AuthCodeURL(state)
 }
 
-func loginHandler(c *gin.Context) {
+func welcomeHandler(c *gin.Context) {
+
 	state = randToken()
 	session := sessions.Default(c)
 	session.Set("state", state)
 	session.Save()
-	log.Println("State:", state)
-	c.Writer.Write([]byte("<html><title>Golang Google</title> <body> <a href='" + getLoginURL(state) + "'><button>Login with Google!</button> </a> </body></html>"))
+
+	c.HTML(http.StatusOK, "welcome.tmpl.html", gin.H{
+		"login_url": getLoginURL(state),
+	})
+}
+
+func domainHandler(c *gin.Context) {
+
 }
 
 func init() {
@@ -126,16 +159,25 @@ func main() {
 	router.Static("/static", "static")
 	router.Static("/favicon.ico", "static/favicon.ico")
 
-	tasks := getAllTasks(0)
-
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
-			"tasks": tasks,
-		})
+
+		if isAuthorized(c) {
+			c.HTML(http.StatusOK, "index.tmpl.html", nil)
+		} else {
+			c.Request.URL.Path = "/welcome"
+			router.HandleContext(c)
+		}
+
 	})
 
-	router.GET("/login", loginHandler)
+	router.GET("/welcome", welcomeHandler)
 	router.GET("/auth", authHandler)
+
+	authorized := router.Group("/domains")
+	authorized.Use(AuthorizeRequest())
+	{
+		authorized.GET("/", domainHandler)
+	}
 
 	router.Run(":" + port)
 }
