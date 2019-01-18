@@ -9,6 +9,7 @@ default:
 before_script:
   - go fmt ./...
   - go vet $(go list ./...)
+  - set TASKMASTER_OAUTH_CLIENT_SECRET 0xdeadbeef
   
 script:
  - go test -race -coverprofile=coverage.txt -covermode=atomic
