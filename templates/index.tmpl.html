@@ -1,7 +1,11 @@
 <html>
   {{template "header.tmpl.html"}}
 <body>
- 
+	
+
+ {{range $element := .tasks}}
+     	<div class="taks">{{$element}}</div>
+ {{end}}
 
 </body>
 </html>
