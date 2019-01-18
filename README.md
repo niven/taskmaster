@@ -59,6 +59,29 @@ The thing then runs on Heroku
 - add a Procfile
 	contents = web: taskmaster
 	
+#### Setting up OAUTH with Google
+
+https://support.google.com/cloud/answer/6158849?hl=en
+https://console.developers.google.com/iam-admin/projects
+Create a new project (in this case: taskmaster)
+https://console.developers.google.com/home/dashboard?project=taskmaster
+
+Much mucking about
+
+client ID:
+406866902910-omkqfc94h59m45a3120j6k6duic3masd.apps.googleusercontent.com
+client secret:
+[stored elsewhere]
+
+Set a domain in your /etc/hosts file
+127.0.0.1	taskmaster.org
+Then enter that one as the Authorized Domains for your OAuth stuff
+Note: the UI is garbage, you need to hit enter to add new items to a list and then click a save button
+
+
+
+
+	
 #### Running locally
 
 go run main.go
