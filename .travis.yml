@@ -1,5 +1,8 @@
 language: go
 
+env:
+	- TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
+
 go:
   - "1.11"
 
@@ -9,7 +12,6 @@ default:
 before_script:
   - go fmt ./...
   - go vet $(go list ./...)
-  - TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
   
 script:
  - go test -race -coverprofile=coverage.txt -covermode=atomic
