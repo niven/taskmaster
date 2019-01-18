@@ -36,6 +36,28 @@ func AuthorizeRequest() gin.HandlerFunc {
 	}
 }
 
+// Minion is someone who performs tasks in Domains
+type Minion struct {
+	ID   uint32
+	Name string
+}
+
+// Domain is a name for something that has tasks and chores
+type Domain struct {
+	ID    uint32
+	Owner uint32
+	Name  string
+}
+
+// Task is a chore you do
+type Task struct {
+	ID          uint32
+	DomainID    uint32
+	Name        string
+	Weekly      bool
+	Description string
+}
+
 // User is a retrieved and authenticated user
 type User struct {
 	Sub           string `json:"sub"`
