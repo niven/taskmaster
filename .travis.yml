@@ -1,7 +1,7 @@
 language: go
 
 env:
-	- TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
+  - TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
 
 go:
   - "1.11"
