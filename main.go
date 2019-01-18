@@ -129,6 +129,16 @@ func getLoginURL(state string) string {
 	return conf.AuthCodeURL(state)
 }
 
+func indexHandler(c *gin.Context) {
+
+	if isAuthorized(c) {
+		c.HTML(http.StatusOK, "index.tmpl.html", nil)
+	} else {
+		welcomeHandler(c)
+	}
+
+}
+
 func welcomeHandler(c *gin.Context) {
 
 	state = randToken()
@@ -181,16 +191,7 @@ func main() {
 	router.Static("/static", "static")
 	router.Static("/favicon.ico", "static/favicon.ico")
 
-	router.GET("/", func(c *gin.Context) {
-
-		if isAuthorized(c) {
-			c.HTML(http.StatusOK, "index.tmpl.html", nil)
-		} else {
-			c.Request.URL.Path = "/welcome"
-			router.HandleContext(c)
-		}
-
-	})
+	router.GET("/", indexHandler)
 
 	router.GET("/welcome", welcomeHandler)
 	router.GET("/auth", authHandler)
