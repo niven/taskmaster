@@ -1,3 +1,5 @@
 /vendor/**/.git
 .DS_Store
-
+coverage.txt
+profile.out
+taskmaster
