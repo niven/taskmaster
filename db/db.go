@@ -98,21 +98,37 @@ func ReadAllMinions() ([]Minion, error) {
 			log.Printf("Error scanning minion: %q", err)
 			return nil, err
 		}
-		log.Printf("%+v\n", m)
 		result = append(result, m)
 	}
 
 	return result, nil
 }
 
-func GetTasksForDomains(domains []Domain) ([]Task, []Task, Task, error) {
+func GetPendingTasksForMinion(minion Minion) ([]Task, error) {
 
-	var (
-		late   []Task
-		weekly []Task
-		today  Task
-	)
+	var tasks []Task
 
-	return late, weekly, today, nil
+	rows, err := db.Query("SELECT ts.task_id, t.domain_id, t.name, t.weekly, t.description, ts.assigned_on FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE ts.minion_id = $1", minion.ID)
+	if err != nil {
+		log.Printf("Error reading pending tasks: %q", err)
+		return tasks, err
+	}
 
+	defer rows.Close()
+	for rows.Next() {
+		var t Task
+		var desc sql.NullString
+
+		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &desc, &t.AssignedDate); err != nil {
+			log.Printf("Error scanning task: %q", err)
+			return tasks, err
+		}
+		// doing it like this avoids having an sql.NullString in the Task struct and always checking .Valid
+		if desc.Valid {
+			t.Description = desc.String
+		}
+		tasks = append(tasks, t)
+	}
+
+	return tasks, nil
 }

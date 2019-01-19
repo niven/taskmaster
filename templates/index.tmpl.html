@@ -6,12 +6,6 @@
 <h1>Main page</h1>
 <h2>Logged in as {{ .minion.ID}} {{ .minion.Name }} ({{ .minion.Email }})
 </h2>
-<h1>Minions</h1>
-<ol>
-{{range .minions }}
-	<li> {{ .ID }} - {{ .Name }} ({{ .Email }})</li>
-{{end}}
-</ol>
 
 <h1>My Domains</h1>
 <ol>
@@ -19,6 +13,14 @@
 	<li> {{ .ID }} - {{ .Owner }} ({{ .Name }})</li>
 {{end}}
 </ol>
+
+<h1>Pending</h1>
+<ol>
+{{range .pending }}
+	<li> {{ .ID }} - {{ .DomainID }} {{ .Name }} {{ .Weekly }} {{ .Description }} {{ .AssignedDate }}</li>
+{{end}}
+</ol>
+
 
 <div id="main">
 
