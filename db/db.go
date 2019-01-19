@@ -104,6 +104,19 @@ func ReadAllMinions() ([]Minion, error) {
 	return result, nil
 }
 
+func GetTaskForDomain(domain Domain) (Task, error) {
+	var result Task
+
+	return result, nil
+}
+
+func GetAllAssignedTasks(domain Domain, minion Minion) ([]Task, error) {
+	var result []Task
+
+	return result, nil
+}
+
+// Retrieve all pending tasks for a minion, across all domains
 func GetPendingTasksForMinion(minion Minion) ([]Task, error) {
 
 	var tasks []Task

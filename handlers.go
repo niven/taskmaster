@@ -148,7 +148,6 @@ func indexHandler(c *gin.Context) {
 		db.LoadMinion(userEmail, &minion)
 	}
 
-	// get all domains for this minion
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
