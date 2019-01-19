@@ -8,13 +8,6 @@ import (
 	"github.com/niven/taskmaster/config"
 )
 
-// Domain is a name for something that has tasks and chores
-type Domain struct {
-	ID    uint32
-	Owner uint32
-	Name  string
-}
-
 // Task is a chore you do
 type Task struct {
 	ID          uint32
