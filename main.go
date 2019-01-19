@@ -39,6 +39,8 @@ func setupRouting(router *gin.Engine) {
 
 func main() {
 
+	config.ReadEnvironmentVars()
+
 	router := gin.New()
 
 	router.Use(sessions.Sessions("tm", store))

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -14,15 +14,17 @@ var (
 	EnvironmentVars = make(map[string]string)
 )
 
-func init() {
+func ReadEnvironmentVars() error {
 
 	for _, name := range environmentVarNames {
-		log.Printf("Reading %s\n", name)
+
 		value := os.Getenv(name)
 
 		if value == "" {
-			log.Fatalf("$%s must be set", name)
+			return fmt.Errorf("$%s must be set", name)
 		}
 		EnvironmentVars[name] = value
 	}
+
+	return nil
 }
