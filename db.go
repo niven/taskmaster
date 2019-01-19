@@ -53,13 +53,6 @@ func LoadMinion(email string, m *Minion) bool {
 	return true
 }
 
-func GetDomainsForMinion(m Minion) []Domain {
-
-	var result []Domain
-
-	return result
-}
-
 func ReadAllMinions() ([]Minion, error) {
 
 	rows, err := db.Query("SELECT * FROM minions")
