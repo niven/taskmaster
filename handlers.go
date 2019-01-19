@@ -8,13 +8,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+
+	"github.com/niven/taskmaster/config"
 )
 
 func isAuthorized(c *gin.Context) bool {
@@ -50,14 +51,9 @@ func getLoginURL(state string) string {
 
 func init() {
 
-	clientSecret := os.Getenv("TASKMASTER_OAUTH_CLIENT_SECRET")
-	if clientSecret == "" {
-		log.Fatal("$TASKMASTER_OAUTH_CLIENT_SECRET must be set")
-	}
-
 	conf = &oauth2.Config{
 		ClientID:     "406866902910-omkqfc94h59m45a3120j6k6duic3masd.apps.googleusercontent.com",
-		ClientSecret: clientSecret,
+		ClientSecret: config.EnvironmentVars["TASKMASTER_OAUTH_CLIENT_SECRET"],
 		RedirectURL:  "http://taskmaster.org:5000/auth",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",

@@ -1,12 +1,11 @@
 package main
 
 import (
-	"log"
-	"os"
-
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+
+	"github.com/niven/taskmaster/config"
 )
 
 // Minion is someone who performs tasks in Domains
@@ -66,11 +65,6 @@ func setupRouting(router *gin.Engine) {
 
 func main() {
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Fatal("$PORT must be set")
-	}
-
 	router := gin.New()
 
 	router.Use(sessions.Sessions("tm", store))
@@ -80,5 +74,5 @@ func main() {
 
 	setupRouting(router)
 
-	router.Run(":" + port)
+	router.Run(":" + config.EnvironmentVars["PORT"])
 }
