@@ -16,7 +16,26 @@ import (
 	"golang.org/x/oauth2/google"
 
 	"github.com/niven/taskmaster/config"
+	. "github.com/niven/taskmaster/data"
+	"github.com/niven/taskmaster/db"
 )
+
+var conf *oauth2.Config
+var state string
+
+func init() {
+
+	conf = &oauth2.Config{
+		ClientID:     "406866902910-omkqfc94h59m45a3120j6k6duic3masd.apps.googleusercontent.com",
+		ClientSecret: config.EnvironmentVars["TASKMASTER_OAUTH_CLIENT_SECRET"],
+		RedirectURL:  "http://taskmaster.org:5000/auth",
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/userinfo.profile",
+		},
+		Endpoint: google.Endpoint,
+	}
+}
 
 func isAuthorized(c *gin.Context) bool {
 	session := sessions.Default(c)
@@ -36,9 +55,6 @@ func AuthorizeRequest() gin.HandlerFunc {
 	}
 }
 
-var conf *oauth2.Config
-var state string
-
 func randToken() string {
 	b := make([]byte, 32)
 	rand.Read(b)
@@ -49,18 +65,17 @@ func getLoginURL(state string) string {
 	return conf.AuthCodeURL(state)
 }
 
-func init() {
-
-	conf = &oauth2.Config{
-		ClientID:     "406866902910-omkqfc94h59m45a3120j6k6duic3masd.apps.googleusercontent.com",
-		ClientSecret: config.EnvironmentVars["TASKMASTER_OAUTH_CLIENT_SECRET"],
-		RedirectURL:  "http://taskmaster.org:5000/auth",
-		Scopes: []string{
-			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/userinfo.profile",
-		},
-		Endpoint: google.Endpoint,
-	}
+// User is a retrieved and authenticated user
+type GoogleUser struct {
+	Sub           string `json:"sub"`
+	Name          string `json:"name"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Profile       string `json:"profile"`
+	Picture       string `json:"picture"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	Gender        string `json:"gender"`
 }
 
 func authHandler(c *gin.Context) {
@@ -88,7 +103,7 @@ func authHandler(c *gin.Context) {
 	data, _ := ioutil.ReadAll(userinfo.Body)
 	log.Println("Email body: ", string(data))
 
-	var user User
+	var user GoogleUser
 
 	err = json.Unmarshal([]byte(data), &user)
 	if err != nil {
@@ -96,6 +111,7 @@ func authHandler(c *gin.Context) {
 	}
 
 	session.Set("user-id", user.Email)
+	session.Set("user-name", user.Name)
 	err = session.Save()
 	if err != nil {
 		log.Println(err)
@@ -109,11 +125,38 @@ func authHandler(c *gin.Context) {
 
 func indexHandler(c *gin.Context) {
 
-	if isAuthorized(c) {
-		c.HTML(http.StatusOK, "index.tmpl.html", nil)
-	} else {
+	if !isAuthorized(c) {
 		welcomeHandler(c)
+		return
 	}
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+
+	if !found {
+		log.Printf("User doesn't exist, creating")
+		userName := session.Get("user-name")
+		if userName == nil {
+			userName = "No Name"
+		}
+		err := db.CreateMinion(userEmail, userName.(string))
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+		}
+		db.LoadMinion(userEmail, &minion)
+	}
+
+	minions, err := db.ReadAllMinions()
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
+		"minion":  minion,
+		"minions": minions,
+	})
 
 }
 

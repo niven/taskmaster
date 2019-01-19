@@ -79,9 +79,6 @@ Then enter that one as the Authorized Domains for your OAuth stuff
 Note: the UI is garbage, you need to hit enter to add new items to a list and then click a save button
 
 
-
-
-	
 #### Running locally
 
 go run main.go
@@ -91,6 +88,32 @@ and/or
 go install
 heroku local
 
+#### Setting up a database
+
+First, do it locally and test stuff. Then later dump the local dir and export it to a Heroku psql instance
+
+Set it up with heroku
+heroku addons:create heroku-postgresql:hobby-dev
+This creates DATABASE_URL, which we should also set locally
+Use 
+	heroku pg:psql
+To query the remote db
+
+Set it locally (fish shell):
+set -x DATABASE_URL postgres://taskmaster
+
+
+first table, for users:
+createdb taskmaster
+psql taskmaster
+DROP TABLE IF EXISTS minions; CREATE TABLE IF NOT EXISTS minions (id SERIAL PRIMARY KEY, email VARCHAR(100) NOT NULL UNIQUE, name VARCHAR(100) NOT NULL ); \d+ minions
+INSERT INTO minions (email, name) VALUES ('test@example.com', 'Test User'), ('gru@minions.com', 'Gru');
+(TODO: don't store, or store emails/names encrypted)
+
+go get github.com/lib/pq
+
+
+DROP TABLE IF EXISTS domains; CREATE TABLE IF NOT EXISTS domains (id SERIAL PRIMARY KEY, name ); \d+ domains
 
 # Ideas
 

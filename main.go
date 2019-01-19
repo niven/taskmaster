@@ -8,12 +8,6 @@ import (
 	"github.com/niven/taskmaster/config"
 )
 
-// Minion is someone who performs tasks in Domains
-type Minion struct {
-	ID   uint32
-	Name string
-}
-
 // Domain is a name for something that has tasks and chores
 type Domain struct {
 	ID    uint32
@@ -28,19 +22,6 @@ type Task struct {
 	Name        string
 	Weekly      bool
 	Description string
-}
-
-// User is a retrieved and authenticated user
-type User struct {
-	Sub           string `json:"sub"`
-	Name          string `json:"name"`
-	GivenName     string `json:"given_name"`
-	FamilyName    string `json:"family_name"`
-	Profile       string `json:"profile"`
-	Picture       string `json:"picture"`
-	Email         string `json:"email"`
-	EmailVerified bool   `json:"email_verified"`
-	Gender        string `json:"gender"`
 }
 
 var store = cookie.NewStore([]byte("secret"))
