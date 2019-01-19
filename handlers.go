@@ -154,7 +154,10 @@ func indexHandler(c *gin.Context) {
 	}
 
 	// get all domains for this minion
-	domains := db.GetDomainsForMinion(minion)
+	domains, err := db.GetDomainsForMinion(minion)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
 

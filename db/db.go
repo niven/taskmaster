@@ -17,6 +17,8 @@ var (
 
 func init() {
 
+	config.ReadEnvironmentVars()
+
 	// if we do db, err := foo() then this 'db' shadows the global one
 	var err error
 	db, err = sql.Open("postgres", config.EnvironmentVars["DATABASE_URL"])
@@ -32,11 +34,15 @@ func CreateMinion(email, name string) error {
 
 	if err != nil {
 		log.Printf("Error inserting new minion: %q", err)
-		return errors.New("Could not insert minion")
+		return err
 	}
 
 	id, err := result.LastInsertId()
-	log.Printf("Created new minion with ID %d\n", id)
+	if err != nil {
+		log.Printf("Created new minion with ID %d\n", id)
+	} else {
+		log.Printf("Error: %v\n", err)
+	}
 	return nil
 }
 
@@ -53,11 +59,26 @@ func LoadMinion(email string, m *Minion) bool {
 	return true
 }
 
-func GetDomainsForMinion(m Minion) []Domain {
+func GetDomainsForMinion(m Minion) ([]Domain, error) {
+
+	rows, err := db.Query("SELECT * FROM domains WHERE owner = $1", m.ID)
+	if err != nil {
+		return nil, err
+	}
 
 	var result []Domain
+	defer rows.Close()
+	for rows.Next() {
+		var d Domain
 
-	return result
+		if err := rows.Scan(&d.ID, &d.Owner, &d.Name); err != nil {
+			log.Printf("Error scanning domains: %q", err)
+			return nil, err
+		}
+		result = append(result, d)
+	}
+
+	return result, nil
 }
 
 func ReadAllMinions() ([]Minion, error) {
@@ -65,7 +86,7 @@ func ReadAllMinions() ([]Minion, error) {
 	rows, err := db.Query("SELECT * FROM minions")
 	if err != nil {
 		log.Printf("Error reading minions: %q", err)
-		return nil, errors.New("Could not select from table")
+		return nil, err
 	}
 
 	result := []Minion{}

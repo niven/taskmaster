@@ -106,14 +106,14 @@ set -x DATABASE_URL postgres://taskmaster
 first table, for users:
 createdb taskmaster
 psql taskmaster
-DROP TABLE IF EXISTS minions; CREATE TABLE IF NOT EXISTS minions (id SERIAL PRIMARY KEY, email VARCHAR(100) NOT NULL UNIQUE, name VARCHAR(100) NOT NULL ); \d+ minions
+DROP TABLE IF EXISTS minions; CREATE TABLE IF NOT EXISTS minions (id SERIAL PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, name VARCHAR(255) NOT NULL ); \d+ minions
 INSERT INTO minions (email, name) VALUES ('test@example.com', 'Test User'), ('gru@minions.com', 'Gru');
 (TODO: don't store, or store emails/names encrypted)
 
 go get github.com/lib/pq
 
 
-DROP TABLE IF EXISTS domains; CREATE TABLE IF NOT EXISTS domains (id SERIAL PRIMARY KEY, name ); \d+ domains
+DROP TABLE IF EXISTS domains; CREATE TABLE IF NOT EXISTS domains (id SERIAL PRIMARY KEY, owner INTEGER REFERENCES minions(id), name VARCHAR(255) NOT NULL ); \d+ domains
 
 # Ideas
 

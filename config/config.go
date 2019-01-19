@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -23,6 +24,7 @@ func ReadEnvironmentVars() error {
 		if value == "" {
 			return fmt.Errorf("$%s must be set", name)
 		}
+		log.Printf("$%s='%s'\n", name, value)
 		EnvironmentVars[name] = value
 	}
 
