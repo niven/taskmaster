@@ -4,7 +4,8 @@
 
 
 <h1>Main page</h1>
-
+<h2>Logged in as {{ .minion.ID}} {{ .minion.Name }} ({{ .minion.Email }})
+</h2>
 <h1>Minions</h1>
 <ol>
 {{range .minions }}
@@ -12,12 +13,20 @@
 {{end}}
 </ol>
 
+<h1>My Domains</h1>
+<ol>
+{{range .domains }}
+	<li> {{ .ID }} - {{ .Owner }} ({{ .Name }})</li>
+{{end}}
+</ol>
+
 <div id="main">
 
 	<div id="settings">
 		<a href="#" id="gear" onclick="document.getElementById('controls').classList.toggle('closed')">&#9881;</a>
+		Logged in as {{ .minion.Name }} ({{ .minion.Email }})
+		
 		<div class="closed" id="controls">
-			Logged in as {{ .minion.Name }} ({{ .minion.Email }})
 			<button onclick="state = init(); save(state); go();">Reset</button>	
 			<button onclick="state = load(); let n = next_day(state.current_day); state.debug.current_day = n; update(state,n); save(state); render(state);">Next Day</button>	
 		</div>
