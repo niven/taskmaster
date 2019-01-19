@@ -1,9 +1,7 @@
 language: go
 
 env:
-  - DATABASE_URL=psotgres//mock
-  - PORT=5000
-  - TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
+  - DATABASE_URL=psotgres//mock PORT=5000 TASKMASTER_OAUTH_CLIENT_SECRET=0xdeadbeef
 
 go:
   - "1.11"
