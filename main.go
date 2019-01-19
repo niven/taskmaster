@@ -8,15 +8,6 @@ import (
 	"github.com/niven/taskmaster/config"
 )
 
-// Task is a chore you do
-type Task struct {
-	ID          uint32
-	DomainID    uint32
-	Name        string
-	Weekly      bool
-	Description string
-}
-
 var store = cookie.NewStore([]byte("secret"))
 
 func setupRouting(router *gin.Engine) {

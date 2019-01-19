@@ -160,11 +160,18 @@ func indexHandler(c *gin.Context) {
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
+	late, weekly, today, err := db.GetTasksForDomains(domains)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
 
 	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
 		"minion":  minion,
 		"minions": minions,
 		"domains": domains,
+		"late":    late,
+		"weekly":  weekly,
+		"today":   today,
 	})
 
 }

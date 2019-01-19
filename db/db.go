@@ -2,7 +2,6 @@ package db
 
 import (
 	"database/sql"
-	"errors"
 	"log"
 
 	_ "github.com/lib/pq" // have to import with an alias since we need the init() to run
@@ -97,11 +96,23 @@ func ReadAllMinions() ([]Minion, error) {
 
 		if err := rows.Scan(&m.ID, &m.Email, &m.Name); err != nil {
 			log.Printf("Error scanning minion: %q", err)
-			return nil, errors.New("Could not scan from rows")
+			return nil, err
 		}
 		log.Printf("%+v\n", m)
 		result = append(result, m)
 	}
 
 	return result, nil
+}
+
+func GetTasksForDomains(domains []Domain) ([]Task, []Task, Task, error) {
+
+	var (
+		late   []Task
+		weekly []Task
+		today  Task
+	)
+
+	return late, weekly, today, nil
+
 }
