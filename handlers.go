@@ -153,6 +153,11 @@ func indexHandler(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
 
+	err = Update(minion)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
 	pendingTasks, err := db.GetPendingTasksForMinion(minion)
 	if err != nil {

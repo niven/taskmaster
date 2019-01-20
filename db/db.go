@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"log"
 
-	_ "github.com/lib/pq" // have to import with an alias since we need the init() to run
+	// have to import with an underbar alias since we need the init() to run
+	_ "github.com/lib/pq"
 
 	"github.com/niven/taskmaster/config"
 	. "github.com/niven/taskmaster/data"
@@ -104,14 +105,25 @@ func ReadAllMinions() ([]Minion, error) {
 	return result, nil
 }
 
-func GetTaskForDomain(domain Domain) (Task, error) {
-	var result Task
-
-	return result, nil
-}
-
-func GetAllAssignedTasks(domain Domain, minion Minion) ([]Task, error) {
+func GetAllTasks(domain Domain) ([]Task, error) {
 	var result []Task
+
+	rows, err := db.Query("SELECT t.id, t.domain_id, t.name, t.weekly, t.description, ts.assigned_on, ts.completed_on FROM tasks AS t LEFT JOIN task_state AS ts ON t.id = ts.task_id WHERE t.domain_id = $1", domain.ID)
+	if err != nil {
+		log.Printf("Error reading tasks: %q", err)
+		return result, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var t Task
+
+		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &t.Description, &t.AssignedDate, &t.CompletedDate); err != nil {
+			log.Printf("Error scanning task: %q", err)
+			return result, err
+		}
+		result = append(result, t)
+	}
 
 	return result, nil
 }
@@ -121,7 +133,7 @@ func GetPendingTasksForMinion(minion Minion) ([]Task, error) {
 
 	var tasks []Task
 
-	rows, err := db.Query("SELECT ts.task_id, t.domain_id, t.name, t.weekly, t.description, ts.assigned_on FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE ts.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT ts.task_id, t.domain_id, t.name, t.weekly, t.description, ts.assigned_on FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return tasks, err
@@ -130,15 +142,10 @@ func GetPendingTasksForMinion(minion Minion) ([]Task, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var t Task
-		var desc sql.NullString
 
-		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &desc, &t.AssignedDate); err != nil {
+		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &t.Description, &t.AssignedDate); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return tasks, err
-		}
-		// doing it like this avoids having an sql.NullString in the Task struct and always checking .Valid
-		if desc.Valid {
-			t.Description = desc.String
 		}
 		tasks = append(tasks, t)
 	}

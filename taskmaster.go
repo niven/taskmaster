@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -13,7 +14,7 @@ import (
 /*
 	Simple case: get 1 new task per Domain for today
 	More complicated: find all past days that have no tasks assigned yet, and assign tasks for them
-	Most complicated case: a Domain is through all tasks for the month. Remove all pending ones and issue more
+	Most complicated case: a Domain is through all tasks for the month. Remove all completed ones and issue more
 */
 func Update(minion Minion) error {
 
@@ -25,14 +26,23 @@ func Update(minion Minion) error {
 	today := time.Now()
 	var tasksToAssign []Task
 	for _, domain := range domains {
-
-		tasks, err := db.GetAllAssignedTasks(domain, minion)
-
+		log.Printf("Updating %s\n", domain.Name)
+		tasks, err := db.GetAllTasks(domain)
 		if err != nil {
 			return err
 		}
 
-		if len(tasks) == 0 {
+		// assigned, available, other := splitTasks(tasks, minion)
+
+		var assignedTasks []Task
+		for _, task := range tasks {
+			// Note: It might be worth treating any db ID as int64 (despite them bein all unusigned)
+			if task.AssignedMinionID.Valid && task.AssignedMinionID.Int64 == int64(minion.ID) {
+				assignedTasks = append(assignedTasks, task)
+			}
+		}
+
+		if len(assignedTasks) == 0 {
 			// cool, just assign a new task.
 			// this minion was either added to this Domain, or the Domain is new today
 			newTask, err := newTaskForMinion(domain, minion, today)
@@ -45,10 +55,10 @@ func Update(minion Minion) error {
 		}
 
 		// find the oldest task, and calculate the number of tasks between that day and today
-		var oldest time.Time = tasks[0].AssignedDate
-		for _, task := range tasks {
-			if task.AssignedDate.Before(oldest) {
-				oldest = task.AssignedDate
+		var oldest time.Time = assignedTasks[0].AssignedDate.Time
+		for _, task := range assignedTasks {
+			if task.AssignedDate.Time.Before(oldest) {
+				oldest = task.AssignedDate.Time
 			}
 		}
 		dates := makeContiguousDates(oldest, today)
@@ -58,12 +68,12 @@ func Update(minion Minion) error {
 		}
 
 		// fill the gaps, days someone didn't log in still generate tasks
-		if len(dates) < len(tasks) {
+		if len(dates) < len(assignedTasks) {
 			// make a map so we can easily find the missing dates
 			// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
 			tasksByDate := make(map[string]Task)
 			for _, task := range tasks {
-				tasksByDate[strDateFromTime(task.AssignedDate)] = task
+				tasksByDate[strDateFromTime(task.AssignedDate.Time)] = task
 			}
 			for _, date := range dates {
 				if _, exists := tasksByDate[strDateFromTime(date)]; !exists {
@@ -81,6 +91,29 @@ func Update(minion Minion) error {
 	// save all tasks
 
 	return nil
+}
+
+/*
+Split tasks in ones that are assigned to the minion, ones assigned to other people and unassigned (available) ones
+*/
+func splitTasks(tasks []Task, minion Minion) ([]Task, []Task, []Task) {
+
+	var assigned, available, other []Task
+
+	for _, task := range tasks {
+		// Note: It might be worth treating any db ID as int64 (despite them bein all unusigned)
+		if task.AssignedMinionID.Valid {
+			if task.AssignedMinionID.Int64 == int64(minion.ID) {
+				assigned = append(assigned, task)
+			} else {
+				other = append(other, task)
+			}
+		} else {
+			available = append(available, task)
+		}
+	}
+
+	return assigned, available, other
 }
 
 func newTaskForMinion(domain Domain, minion Minion, date time.Time) (Task, error) {

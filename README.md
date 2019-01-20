@@ -119,7 +119,8 @@ INSERT INTO domains (owner, name) VALUES (2, 'Tree House'), (2,'Actual House');
 DROP TABLE IF EXISTS tasks; CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, domain_id INTEGER REFERENCES domains(id), name VARCHAR(255) NOT NULL, weekly BOOLEAN DEFAULT false, description TEXT, state ); \d+ tasks
 INSERT INTO tasks (domain_id, name, weekly) VALUES (1, 'Remove leaves', false), (1, 'Wash window', true), (2, 'Laundry', false), (2, 'Dishes', false), (2, 'Clean fridge', true);
 
-DROP TABLE IF EXISTS task_state; CREATE TABLE IF NOT EXISTS task_state (task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL); \d+ task_state
+DROP TABLE IF EXISTS task_state; CREATE TABLE IF NOT EXISTS task_state (task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL, completed_on DATE); \d+ task_state
+INSERT INTO task_state (task_id, minion_id, assigned_on) VALUES(1, 6, CURRENT_DATE);
 
 
 # Ideas
