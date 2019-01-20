@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -32,7 +33,7 @@ func Update(minion Minion) error {
 			return err
 		}
 
-		assigned, _, _ := splitTasks(tasks, minion)
+		assigned, available, _ := splitTasks(tasks, minion)
 
 		if len(assigned) == 0 {
 			// cool, just assign a new task.
@@ -46,40 +47,67 @@ func Update(minion Minion) error {
 			continue
 		}
 
-		// find the oldest task, and calculate the number of tasks between that day and today
-		oldest, _ := findOldestTaskTime(assigned)
-		// ignoring err since that only happens when assigned has no elements
-
-		dates := makeContiguousDates(oldest, today)
-
-		if len(dates) > len(tasks) {
-			return errors.New("Somehow there are more tasks than days...")
+		additionalTasks, err := fillGapsWithTasks(assigned, available, today)
+		if err != nil {
+			return err
 		}
-
-		// fill the gaps, days someone didn't log in still generate tasks
-		if len(dates) < len(assigned) {
-			// make a map so we can easily find the missing dates
-			// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
-			tasksByDate := make(map[string]Task)
-			for _, task := range tasks {
-				tasksByDate[strDateFromTime(task.AssignedDate.Time)] = task
-			}
-			for _, date := range dates {
-				if _, exists := tasksByDate[strDateFromTime(date)]; !exists {
-					newTask, err := newTaskForMinion(domain, minion, date)
-					if err != nil {
-						return err
-					}
-					tasksToAssign = append(tasksToAssign, newTask)
-				}
-			}
-		}
+		tasksToAssign = append(tasksToAssign, additionalTasks...) // ... is spread
 
 	}
 
 	// save all tasks
 
 	return nil
+}
+
+/*
+	For every day that doesn't have an assigned task, pick one from the available ones
+*/
+func fillGapsWithTasks(assigned, available []Task, upToIncluding time.Time) ([]Task, error) {
+
+	var result []Task
+
+	// find the oldest task, and calculate the number of tasks between that day and today
+	oldest, _ := findOldestTaskTime(assigned)
+	// ignoring err since that only happens when assigned has no elements
+
+	dates := makeContiguousDates(oldest, upToIncluding)
+
+	if len(assigned) > len(dates) {
+		return result, errors.New("Somehow there are more tasks assigned than days...")
+	}
+
+	// fill the gaps, days someone didn't log in still generate tasks
+	if len(assigned) < len(dates) {
+
+		// TODO: Remove assigned tasks to avoid dupes
+
+		// pick random tasks, not in order
+		rand.Shuffle(len(available), func(i, j int) {
+			available[i], available[j] = available[j], available[i]
+		})
+
+		// make a map so we can easily find the missing dates
+		// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
+		tasksByDate := make(map[string]Task)
+		for _, task := range assigned {
+			tasksByDate[strDateFromTime(task.AssignedDate.Time)] = task
+		}
+
+		for _, date := range dates {
+			if _, exists := tasksByDate[strDateFromTime(date)]; !exists {
+
+				if len(available) == 0 {
+					return result, errors.New("We ran out of available tasks")
+				}
+
+				result = append(result, available[0])
+				available = available[1:]
+			}
+		}
+	}
+
+	return result, nil
 }
 
 func findOldestTaskTime(tasks []Task) (time.Time, error) {

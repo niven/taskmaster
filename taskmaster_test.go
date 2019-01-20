@@ -2,12 +2,91 @@ package main
 
 import (
 	"database/sql"
+	"log"
 	"testing"
 	"time"
 
 	"github.com/lib/pq"
 	. "github.com/niven/taskmaster/data"
 )
+
+func TestFillGapsWithTasksNotEnough(t *testing.T) {
+
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 6)
+
+	assigned := []Task{
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+	}
+	var available []Task
+	_, err := fillGapsWithTasks(assigned, available, end)
+	if err == nil {
+		t.Fail()
+	}
+
+}
+
+func TestFillGapsWithTasksMulti(t *testing.T) {
+
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 6)
+
+	assigned := []Task{
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 2)},
+		},
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 4)},
+		},
+	}
+	available := []Task{
+		Task{},
+		Task{},
+		Task{},
+		Task{},
+		Task{},
+		Task{},
+		Task{},
+	}
+
+	additionalTasks, err := fillGapsWithTasks(assigned, available, end)
+	if err != nil {
+		t.Fail()
+	}
+	if len(additionalTasks) != 4 {
+		t.Fail()
+	}
+}
+
+func TestFillGapsWithTasksSingle(t *testing.T) {
+
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 1)
+	log.Printf("%v %v", start, end)
+	assigned := []Task{
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+	}
+	available := []Task{
+		Task{},
+	}
+
+	additionalTasks, err := fillGapsWithTasks(assigned, available, end)
+
+	if err != nil {
+		t.Fail()
+	}
+	if len(additionalTasks) != 1 {
+		t.Fail()
+	}
+
+}
 
 func TestFindOldestTaskTimeMulti(t *testing.T) {
 
