@@ -5,8 +5,63 @@ import (
 	"testing"
 	"time"
 
+	"github.com/lib/pq"
 	. "github.com/niven/taskmaster/data"
 )
+
+func TestFindOldestTaskTimeMulti(t *testing.T) {
+
+	tasks := []Task{
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)},
+		},
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2008, time.November, 10, 23, 0, 0, 0, time.UTC)},
+		},
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2007, time.November, 10, 23, 0, 0, 0, time.UTC)},
+		},
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2006, time.November, 10, 23, 0, 0, 0, time.UTC)},
+		},
+	}
+
+	oldest, err := findOldestTaskTime(tasks)
+	if err != nil {
+		t.Fail()
+	}
+
+	if !oldest.Equal(tasks[3].AssignedDate.Time) {
+		t.Fail()
+	}
+}
+
+func TestFindOldestTaskTimeEmpty(t *testing.T) {
+
+	var tasks []Task
+
+	_, err := findOldestTaskTime(tasks)
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestFindOldestTaskTimeSingle(t *testing.T) {
+
+	tasks := []Task{
+		Task{
+			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)},
+		},
+	}
+
+	oldest, err := findOldestTaskTime(tasks)
+	if err != nil {
+		t.Fail()
+	}
+	if !oldest.Equal(tasks[0].AssignedDate.Time) {
+		t.Fail()
+	}
+}
 
 func TestSplitTasksMany(t *testing.T) {
 

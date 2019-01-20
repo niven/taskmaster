@@ -32,17 +32,9 @@ func Update(minion Minion) error {
 			return err
 		}
 
-		// assigned, available, other := splitTasks(tasks, minion)
+		assigned, _, _ := splitTasks(tasks, minion)
 
-		var assignedTasks []Task
-		for _, task := range tasks {
-			// Note: It might be worth treating any db ID as int64 (despite them bein all unusigned)
-			if task.AssignedMinionID.Valid && task.AssignedMinionID.Int64 == int64(minion.ID) {
-				assignedTasks = append(assignedTasks, task)
-			}
-		}
-
-		if len(assignedTasks) == 0 {
+		if len(assigned) == 0 {
 			// cool, just assign a new task.
 			// this minion was either added to this Domain, or the Domain is new today
 			newTask, err := newTaskForMinion(domain, minion, today)
@@ -55,12 +47,9 @@ func Update(minion Minion) error {
 		}
 
 		// find the oldest task, and calculate the number of tasks between that day and today
-		var oldest time.Time = assignedTasks[0].AssignedDate.Time
-		for _, task := range assignedTasks {
-			if task.AssignedDate.Time.Before(oldest) {
-				oldest = task.AssignedDate.Time
-			}
-		}
+		oldest, _ := findOldestTaskTime(assigned)
+		// ignoring err since that only happens when assigned has no elements
+
 		dates := makeContiguousDates(oldest, today)
 
 		if len(dates) > len(tasks) {
@@ -68,7 +57,7 @@ func Update(minion Minion) error {
 		}
 
 		// fill the gaps, days someone didn't log in still generate tasks
-		if len(dates) < len(assignedTasks) {
+		if len(dates) < len(assigned) {
 			// make a map so we can easily find the missing dates
 			// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
 			tasksByDate := make(map[string]Task)
@@ -91,6 +80,22 @@ func Update(minion Minion) error {
 	// save all tasks
 
 	return nil
+}
+
+func findOldestTaskTime(tasks []Task) (time.Time, error) {
+
+	var oldest time.Time
+	if len(tasks) == 0 {
+		return oldest, errors.New("Empty task list")
+	}
+
+	oldest = tasks[0].AssignedDate.Time
+	for _, task := range tasks {
+		if task.AssignedDate.Time.Before(oldest) {
+			oldest = task.AssignedDate.Time
+		}
+	}
+	return oldest, nil
 }
 
 /*
