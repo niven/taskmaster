@@ -38,7 +38,7 @@ func CreateMinion(email, name string) error {
 	}
 
 	id, err := result.LastInsertId()
-	if err != nil {
+	if err == nil {
 		log.Printf("Created new minion with ID %d\n", id)
 	} else {
 		log.Printf("Error: %v\n", err)
@@ -103,6 +103,22 @@ func ReadAllMinions() ([]Minion, error) {
 	}
 
 	return result, nil
+}
+
+func ResetCompletedTasks(domain Domain) error {
+
+	result, err := db.Exec("DELETE FROM task_state WHERE domain = $1 AND completed_on IS NOT NULL", domain.ID)
+	if err != nil {
+		return err
+	}
+
+	count, err := result.RowsAffected()
+	if err == nil {
+		log.Printf("Reset %d tasks\n", count)
+	} else {
+		return err
+	}
+	return nil
 }
 
 func GetAllTasks(domain Domain) ([]Task, error) {

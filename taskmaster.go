@@ -28,6 +28,7 @@ func Update(minion Minion) error {
 	var tasksToAssign []Task
 	for _, domain := range domains {
 		log.Printf("Updating %s\n", domain.Name)
+
 		tasks, err := db.GetAllTasks(domain)
 		if err != nil {
 			return err
@@ -35,14 +36,24 @@ func Update(minion Minion) error {
 
 		assigned, available, _ := splitTasks(tasks, minion)
 
-		if len(assigned) == 0 {
-			// cool, just assign a new task.
-			// this minion was either added to this Domain, or the Domain is new today
-			newTask, err := newTaskForMinion(domain, minion, today)
+		// every task is either pending or completed. Reset all completed tasks
+		if len(available) == 0 {
+			db.ResetCompletedTasks(domain)
+			tasks, err := db.GetAllTasks(domain)
 			if err != nil {
 				return err
 			}
-			tasksToAssign = append(tasksToAssign, newTask)
+			assigned, available, _ = splitTasks(tasks, minion)
+			if len(available) == 0 {
+				return errors.New("No tasks available (or all are pending)")
+			}
+		}
+
+		if len(assigned) == 0 {
+			// cool, just assign a new task.
+			// this minion was either added to this Domain, or the Domain is new today
+			tasksToAssign = append(tasksToAssign, available[0])
+			available = available[1:]
 			// it's nicer to continue than to have another block indented if we used an else
 			continue
 		}
