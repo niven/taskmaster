@@ -3,12 +3,14 @@ package db
 import (
 	"database/sql"
 	"log"
+	"time"
 
 	// have to import with an underbar alias since we need the init() to run
 	_ "github.com/lib/pq"
 
 	"github.com/niven/taskmaster/config"
 	. "github.com/niven/taskmaster/data"
+	"github.com/niven/taskmaster/util"
 )
 
 var (
@@ -105,9 +107,21 @@ func ReadAllMinions() ([]Minion, error) {
 	return result, nil
 }
 
-func ResetCompletedTasks(domain Domain) error {
+func SaveTaskAssignment(taskID, minionID uint32, assignedOn time.Time) error {
 
-	result, err := db.Exec("DELETE FROM task_state WHERE domain = $1 AND completed_on IS NOT NULL", domain.ID)
+	strDate := util.StrDateFromTime(assignedOn)
+	_, err := db.Exec("INSERT INTO task_state (task_id, minion_id, assigned_on) VALUES($1,$2,$3)", taskID, minionID, strDate)
+
+	if err != nil {
+		log.Printf("Error inserting new minion: %q", err)
+		return err
+	}
+	return nil
+}
+
+func ResetAllCompletedTasks() error {
+
+	result, err := db.Exec("DELETE FROM task_state WHERE completed_on IS NOT NULL")
 	if err != nil {
 		return err
 	}

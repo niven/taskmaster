@@ -17,3 +17,8 @@ type Task struct {
 	AssignedDate     pq.NullTime
 	CompletedDate    pq.NullTime
 }
+
+var NoTask = Task{
+	ID:   0,
+	Name: "Nothing to do",
+}

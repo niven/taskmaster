@@ -21,11 +21,19 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 		},
 	}
 	var available []Task
-	_, err := fillGapsWithTasks(assigned, available, end)
-	if err == nil {
+	assigned, err := fillGapsWithTasks(assigned, available, end)
+	if err != nil {
 		t.Fail()
 	}
-
+	noTaskCount := 0
+	for _, t := range assigned {
+		if t.ID == NoTask.ID {
+			noTaskCount++
+		}
+	}
+	if noTaskCount != 6 {
+		t.Fail()
+	}
 }
 
 func TestFillGapsWithTasksMulti(t *testing.T) {
@@ -235,14 +243,6 @@ func TestMakeContiguousDatesOrder(t *testing.T) {
 
 	dates := makeContiguousDates(from, to)
 	if len(dates) != 3 {
-		t.Fail()
-	}
-}
-
-func TestStrDateFromTime(t *testing.T) {
-	from := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
-	strDate := strDateFromTime(from)
-	if strDate != "2009-11-10" {
 		t.Fail()
 	}
 }

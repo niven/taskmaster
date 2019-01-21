@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"math/rand"
 	"strings"
@@ -10,21 +9,29 @@ import (
 
 	. "github.com/niven/taskmaster/data"
 	"github.com/niven/taskmaster/db"
+	"github.com/niven/taskmaster/util"
 )
 
 /*
-	Simple case: get 1 new task per Domain for today
-	More complicated: find all past days that have no tasks assigned yet, and assign tasks for them
-	Most complicated case: a Domain is through all tasks for the month. Remove all completed ones and issue more
+	So this is a bit too complex at the moment:
+	- Every day a minion gets a new task for each of their Domains (I might rename that)
+	- At the 1st of the month, every task gets 'shuffled back in'
+	- After completing a task, the minion can stash the card or shuffle back in
+	- If all cards run out before the end of the month.... that's fine I guess?
+	- If a minion has missed days, retroactively assign tasks to them
 */
 func Update(minion Minion) error {
+
+	today := time.Now()
+	if today.Day() == 1 {
+		db.ResetAllCompletedTasks()
+	}
 
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
 		return err
 	}
 
-	today := time.Now()
 	var tasksToAssign []Task
 	for _, domain := range domains {
 		log.Printf("Updating %s\n", domain.Name)
@@ -36,17 +43,9 @@ func Update(minion Minion) error {
 
 		assigned, available, _ := splitTasks(tasks, minion)
 
-		// every task is either pending or completed. Reset all completed tasks
 		if len(available) == 0 {
-			db.ResetCompletedTasks(domain)
-			tasks, err := db.GetAllTasks(domain)
-			if err != nil {
-				return err
-			}
-			assigned, available, _ = splitTasks(tasks, minion)
-			if len(available) == 0 {
-				return errors.New("No tasks available (or all are pending)")
-			}
+			tasksToAssign = append(tasksToAssign, NoTask)
+			continue // it's nicer to continue than to have another block indented if we used an else
 		}
 
 		if len(assigned) == 0 {
@@ -54,10 +53,10 @@ func Update(minion Minion) error {
 			// this minion was either added to this Domain, or the Domain is new today
 			tasksToAssign = append(tasksToAssign, available[0])
 			available = available[1:]
-			// it's nicer to continue than to have another block indented if we used an else
 			continue
 		}
 
+		// Fill any gaps including today with tasks
 		additionalTasks, err := fillGapsWithTasks(assigned, available, today)
 		if err != nil {
 			return err
@@ -66,7 +65,11 @@ func Update(minion Minion) error {
 
 	}
 
-	// save all tasks
+	for _, t := range tasksToAssign {
+		if t.ID != NoTask.ID {
+			db.SaveTaskAssignment(t.ID, minion.ID, t.AssignedDate.Time)
+		}
+	}
 
 	return nil
 }
@@ -102,18 +105,19 @@ func fillGapsWithTasks(assigned, available []Task, upToIncluding time.Time) ([]T
 		// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
 		tasksByDate := make(map[string]Task)
 		for _, task := range assigned {
-			tasksByDate[strDateFromTime(task.AssignedDate.Time)] = task
+			tasksByDate[util.StrDateFromTime(task.AssignedDate.Time)] = task
 		}
 
 		for _, date := range dates {
-			if _, exists := tasksByDate[strDateFromTime(date)]; !exists {
+			if _, exists := tasksByDate[util.StrDateFromTime(date)]; !exists {
 
 				if len(available) == 0 {
-					return result, errors.New("We ran out of available tasks")
+					result = append(result, NoTask)
+				} else {
+					result = append(result, available[0])
+					available = available[1:]
 				}
 
-				result = append(result, available[0])
-				available = available[1:]
 			}
 		}
 	}
@@ -166,11 +170,6 @@ func newTaskForMinion(domain Domain, minion Minion, date time.Time) (Task, error
 	return result, nil
 }
 
-func strDateFromTime(t time.Time) string {
-	y, m, d := t.Date()
-	return fmt.Sprintf("%d-%02d-%02d", y, m, d)
-}
-
 // fill the interval [d1, d2] of dates
 func makeContiguousDates(d1, d2 time.Time) []time.Time {
 	// Relevant reading: https://infiniteundo.com/post/25326999628/falsehoods-programmers-believe-about-time
@@ -184,8 +183,8 @@ func makeContiguousDates(d1, d2 time.Time) []time.Time {
 
 	currentTime := d1
 
-	endStr := strDateFromTime(d2)
-	for strings.Compare(strDateFromTime(currentTime), endStr) == -1 {
+	endStr := util.StrDateFromTime(d2)
+	for strings.Compare(util.StrDateFromTime(currentTime), endStr) == -1 {
 		currentTime = currentTime.AddDate(0, 0, 1)
 		result = append(result, currentTime)
 	}
