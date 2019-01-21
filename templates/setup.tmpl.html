@@ -1,0 +1,26 @@
+<html>
+  {{template "header.tmpl.html"}}
+<body>
+
+
+<div id="main">
+<h1>Setup</h1>
+
+
+<h2>My Domains</h2>
+{{if not .domains}} 
+You don't have any Decks set up!
+{{else}}
+
+<ol>
+{{range .domains }}
+	<li> {{ .ID }} - {{ .Owner }} ({{ .Name }})</li>
+{{end}}
+</ol>
+
+{{end}}
+
+</div>
+
+</body>
+</html>

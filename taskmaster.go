@@ -49,8 +49,7 @@ func Update(minion Minion) error {
 		}
 
 		if len(assigned) == 0 {
-			// cool, just assign a new task.
-			// this minion was either added to this Domain, or the Domain is new today
+			// this minion was either added to this Domain, or the Domain is new today or it was reset
 			tasksToAssign = append(tasksToAssign, available[0])
 			available = available[1:]
 			continue

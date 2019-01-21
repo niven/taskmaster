@@ -153,6 +153,14 @@ func indexHandler(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
 
+	if len(domains) == 0 {
+		c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
+			"minion":  minion,
+			"domains": domains,
+		})
+		return
+	}
+
 	err = Update(minion)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
