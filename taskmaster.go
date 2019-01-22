@@ -23,9 +23,6 @@ import (
 func Update(minion Minion) error {
 
 	today := time.Now()
-	if today.Day() == 1 {
-		db.ResetAllCompletedTasks()
-	}
 
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
@@ -35,6 +32,11 @@ func Update(minion Minion) error {
 	var tasksToAssign []Task
 	for _, domain := range domains {
 		log.Printf("Updating %s\n", domain.Name)
+
+		// Avoid resetting every domain every time we run Update() on the 1st of the month
+		if today.Day() == 1 && domain.LastResetDate.Month() != today.Month() {
+			db.ResetAllCompletedTasks(domain)
+		}
 
 		tasks, err := db.GetAllTasks(domain)
 		if err != nil {

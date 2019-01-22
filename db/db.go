@@ -63,7 +63,7 @@ func LoadMinion(email string, m *Minion) bool {
 
 func GetDomainsForMinion(m Minion) ([]Domain, error) {
 
-	rows, err := db.Query("SELECT * FROM domains WHERE owner = $1", m.ID)
+	rows, err := db.Query("SELECT id, owner, name, last_reset_date FROM domains WHERE owner = $1", m.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func GetDomainsForMinion(m Minion) ([]Domain, error) {
 	for rows.Next() {
 		var d Domain
 
-		if err := rows.Scan(&d.ID, &d.Owner, &d.Name); err != nil {
+		if err := rows.Scan(&d.ID, &d.Owner, &d.Name, &d.LastResetDate); err != nil {
 			log.Printf("Error scanning domains: %q", err)
 			return nil, err
 		}
@@ -119,9 +119,13 @@ func SaveTaskAssignment(taskID, minionID uint32, assignedOn time.Time) error {
 	return nil
 }
 
-func ResetAllCompletedTasks() error {
+func ResetAllCompletedTasks(domain Domain) error {
 
-	result, err := db.Exec("DELETE FROM task_state WHERE completed_on IS NOT NULL")
+	result, err := db.Exec("DELETE FROM task_state WHERE completed_on IS NOT NULL AND domain_id = $1", domain.ID)
+	if err != nil {
+		return err
+	}
+	result, err = db.Exec("UPDATE domains SET last_reset_date = CURRENT_DATE WHERE id = $1", domain.ID)
 	if err != nil {
 		return err
 	}
