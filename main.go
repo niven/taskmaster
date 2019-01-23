@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -29,7 +32,11 @@ func setupRouting(router *gin.Engine) {
 
 func main() {
 
-	config.ReadEnvironmentVars()
+	err := config.ReadEnvironmentVars()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	router := gin.New()
 
