@@ -29,6 +29,7 @@
 		
 		<div class="closed" id="controls">
 		Logged in as {{ .minion.Name }} ({{ .minion.Email }})
+			<a href="/setup">Setup</a>
 			<button onclick="state = init(); save(state); go();">Reset</button>	
 			<button onclick="state = load(); let n = next_day(state.current_day); state.debug.current_day = n; update(state,n); save(state); render(state);">Next Day</button>	
 		</div>
