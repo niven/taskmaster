@@ -38,7 +38,7 @@ func Update(minion Minion) error {
 			db.ResetAllCompletedTasks(domain)
 		}
 
-		tasks, err := db.GetAllTasks(domain)
+		tasks, err := db.GetTasksForDomain(domain)
 		if err != nil {
 			return err
 		}

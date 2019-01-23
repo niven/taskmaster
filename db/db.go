@@ -66,6 +66,20 @@ func CreateNewDomain(minion Minion, domainName string) error {
 	return nil
 }
 
+func GetDomainByID(domainID uint32) (Domain, error) {
+
+	row := db.QueryRow("SELECT id, owner, name, last_reset_date FROM domains WHERE id = $1", domainID)
+
+	var result Domain
+
+	err := row.Scan(&result.ID, &result.Owner, &result.Name, &result.LastResetDate)
+	if err == sql.ErrNoRows {
+		return result, err
+	}
+
+	return result, nil
+}
+
 func GetDomainsForMinion(m Minion) ([]Domain, error) {
 
 	rows, err := db.Query("SELECT id, owner, name, last_reset_date FROM domains WHERE owner = $1", m.ID)
@@ -144,7 +158,7 @@ func ResetAllCompletedTasks(domain Domain) error {
 	return nil
 }
 
-func GetAllTasks(domain Domain) ([]Task, error) {
+func GetTasksForDomain(domain Domain) ([]Task, error) {
 	var result []Task
 
 	rows, err := db.Query("SELECT t.id, t.domain_id, t.name, t.weekly, t.description, ts.assigned_on, ts.completed_on FROM tasks AS t LEFT JOIN task_state AS ts ON t.id = ts.task_id WHERE t.domain_id = $1", domain.ID)

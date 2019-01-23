@@ -4,24 +4,25 @@
 
 
 <div id="main">
-<h1>Setup</h1>
+<h1>Editing {{ .domain.Name }}</h1>
 
 
-<h2>My Domains</h2>
-{{if not .domains}} 
-You don't have any Decks set up!
+<h2>Tasks</h2>
+{{if not .tasks}} 
+This Deck doesn't have any chores
 {{else}}
 
 <ol>
-{{range .domains }}
-	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }}</a></li>
+{{range .tasks }}
+	<li>{{ .Name }}</li>
 {{end}}
 </ol>
 
 {{end}}
 
 <div>
-	<form method="post" action="/domain/new">
+	<form method="post" action="/task/new">
+		<input type="hidden" name="domain_id" size="20" maxlengt="200">
 		<input type="text" name="name" size="20" maxlengt="200">
 		<input type="submit" value="Add New">
 	</form>

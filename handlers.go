@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -214,4 +215,38 @@ func domainNewHandler(c *gin.Context) {
 	db.CreateNewDomain(minion, domainName)
 
 	setupHandler(c)
+}
+
+func domainEditHandler(c *gin.Context) {
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+	}
+
+	domainID, err := strconv.Atoi(c.Param("domain_id"))
+	if err != nil || domainID < 0 {
+		c.AbortWithError(http.StatusBadRequest, errors.New("Invalid domain ID"))
+	}
+
+	domain, err := db.GetDomainByID(uint32(domainID))
+	if err != nil || domain.Owner != minion.ID {
+		c.AbortWithError(http.StatusBadRequest, errors.New("Domain not found"))
+	}
+
+	tasks, err := db.GetTasksForDomain(domain)
+	if err != nil {
+		// return not found to avoid leaking domain IDs. Not that it matters here, but general principle
+		c.AbortWithError(http.StatusBadRequest, errors.New("Domain not found"))
+	}
+
+	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
+		"minion": minion,
+		"domain": domain,
+		"tasks":  tasks,
+	})
+
 }

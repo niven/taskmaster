@@ -32,6 +32,7 @@ func setupRouting(router *gin.Engine) {
 	domain.Use(AuthorizeRequest())
 	{
 		domain.POST("/new", domainNewHandler)
+		domain.GET("/edit/:domain_id", domainEditHandler)
 	}
 
 }
