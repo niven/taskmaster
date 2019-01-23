@@ -2,7 +2,22 @@
   {{template "header.tmpl.html"}}
 <body>
 
+{{if not .message}} 
+
+<h1>Oops, something went wrong!</h1>
+
+{{else}}
+
 <h1>{{ .message }}</h1>
+
+{{end}}
+
+{{if .error}} 
+
+<code>{{ .error }}</code>
+
+{{end}}
+
 
 </body>
 </html>

@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -84,20 +83,20 @@ func authHandler(c *gin.Context) {
 	session := sessions.Default(c)
 	retrievedState := session.Get("state")
 	if retrievedState != c.Query("state") {
-		c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("Invalid session state: %s !+ %s", retrievedState, c.Query("state")))
+		errorHandler(c, fmt.Sprintf("Invalid session state: %s !+ %s", retrievedState, c.Query("state")), nil)
 		return
 	}
 
 	tok, err := conf.Exchange(oauth2.NoContext, c.Query("code"))
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "", err)
 		return
 	}
 
 	client := conf.Client(oauth2.NoContext, tok)
 	userinfo, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "", err)
 		return
 	}
 	defer userinfo.Body.Close()
@@ -115,8 +114,7 @@ func authHandler(c *gin.Context) {
 	session.Set("user-name", user.Name)
 	err = session.Save()
 	if err != nil {
-		log.Println(err)
-		c.HTML(http.StatusBadRequest, "error.tmpl.html", gin.H{"message": "Error while saving session. Please try again."})
+		errorHandler(c, "Error while saving session. Please try again.", err)
 		return
 	}
 
@@ -139,25 +137,29 @@ func indexHandler(c *gin.Context) {
 		}
 		err := db.CreateMinion(userEmail, userName.(string))
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			errorHandler(c, "", err)
+			return
 		}
 		db.LoadMinion(userEmail, &minion)
 	}
 
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "", err)
+		return
 	}
 
 	err = Update(minion)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "", err)
+		return
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
 	pendingTasks, err := db.GetPendingTasksForMinion(minion)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "", err)
+		return
 	}
 
 	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
@@ -187,12 +189,14 @@ func setupHandler(c *gin.Context) {
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+		errorHandler(c, "User authenticated but not found", nil)
+		return
 	}
 
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		errorHandler(c, "User authenticated but not found", nil)
+		return
 	}
 
 	c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
@@ -208,13 +212,23 @@ func domainNewHandler(c *gin.Context) {
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+		errorHandler(c, "User authenticated but not found", nil)
+		return
 	}
 
 	domainName := c.DefaultPostForm("name", "Unnamed Deck")
 	db.CreateNewDomain(minion, domainName)
 
 	setupHandler(c)
+}
+
+func errorHandler(c *gin.Context, message string, err error) {
+
+	c.HTML(http.StatusBadRequest, "error.tmpl.html", gin.H{
+		"message": message,
+		"error":   err,
+	})
+
 }
 
 func domainEditHandler(c *gin.Context) {
@@ -224,23 +238,26 @@ func domainEditHandler(c *gin.Context) {
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+		errorHandler(c, "User authenticated but not found", nil)
 	}
 
 	domainID, err := strconv.Atoi(c.Param("domain_id"))
 	if err != nil || domainID < 0 {
-		c.AbortWithError(http.StatusBadRequest, errors.New("Invalid domain ID"))
+		errorHandler(c, "Invalid domain ID", err)
+		return
 	}
 
 	domain, err := db.GetDomainByID(uint32(domainID))
 	if err != nil || domain.Owner != minion.ID {
-		c.AbortWithError(http.StatusBadRequest, errors.New("Domain not found"))
+		errorHandler(c, "Domain not found", err)
+		return
 	}
 
 	tasks, err := db.GetTasksForDomain(domain)
 	if err != nil {
 		// return not found to avoid leaking domain IDs. Not that it matters here, but general principle
-		c.AbortWithError(http.StatusBadRequest, errors.New("Domain not found"))
+		errorHandler(c, "Domain not found", err)
+		return
 	}
 
 	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
