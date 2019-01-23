@@ -50,8 +50,7 @@ func AuthorizeRequest() gin.HandlerFunc {
 		if isAuthorized(c) {
 			c.Next()
 		} else {
-			c.HTML(http.StatusUnauthorized, "error.tmpl.html", gin.H{"message": "Please login."})
-			c.Abort()
+			welcomeHandler(c)
 		}
 	}
 }

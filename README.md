@@ -81,12 +81,17 @@ Note: the UI is garbage, you need to hit enter to add new items to a list and th
 
 #### Running locally
 
-go run main.go
+set -x DATABASE_URL postgres://localhost/taskmaster\?sslmode=disable
+set -x PORT 5000
+set -x TASKMASTER_OAUTH_CLIENT_SECRET ...
+
+go run main.go taskmaster.go handlers.go
 
 and/or
 
 go install
 heroku local
+
 
 #### Setting up a database
 
