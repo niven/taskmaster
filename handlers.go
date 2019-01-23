@@ -199,3 +199,19 @@ func setupHandler(c *gin.Context) {
 		"domains": domains,
 	})
 }
+
+func domainNewHandler(c *gin.Context) {
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+	}
+
+	domainName := c.DefaultPostForm("name", "Unnamed Deck")
+	db.CreateNewDomain(minion, domainName)
+
+	setupHandler(c)
+}

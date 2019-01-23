@@ -28,6 +28,12 @@ func setupRouting(router *gin.Engine) {
 		authorized.GET("/setup", setupHandler)
 	}
 
+	domain := router.Group("/domain")
+	domain.Use(AuthorizeRequest())
+	{
+		domain.POST("/new", domainNewHandler)
+	}
+
 }
 
 func main() {

@@ -32,19 +32,13 @@ func init() {
 
 func CreateMinion(email, name string) error {
 
-	result, err := db.Exec("INSERT INTO minions (email,name) VALUES($1,$2)", email, name)
+	_, err := db.Exec("INSERT INTO minions (email, name) VALUES($1,$2)", email, name)
 
 	if err != nil {
 		log.Printf("Error inserting new minion: %q", err)
 		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err == nil {
-		log.Printf("Created new minion with ID %d\n", id)
-	} else {
-		log.Printf("Error: %v\n", err)
-	}
 	return nil
 }
 
@@ -59,6 +53,17 @@ func LoadMinion(email string, m *Minion) bool {
 	}
 
 	return true
+}
+
+func CreateNewDomain(minion Minion, domainName string) error {
+	_, err := db.Exec("INSERT INTO domains (owner, name) VALUES($1, $2)", minion.ID, domainName)
+
+	if err != nil {
+		log.Printf("Error inserting new domain: %q", err)
+		return err
+	}
+
+	return nil
 }
 
 func GetDomainsForMinion(m Minion) ([]Domain, error) {
