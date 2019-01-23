@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -125,11 +126,6 @@ func authHandler(c *gin.Context) {
 
 func indexHandler(c *gin.Context) {
 
-	if !isAuthorized(c) {
-		welcomeHandler(c)
-		return
-	}
-
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
@@ -151,14 +147,6 @@ func indexHandler(c *gin.Context) {
 	domains, err := db.GetDomainsForMinion(minion)
 	if err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
-	}
-
-	if len(domains) == 0 {
-		c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
-			"minion":  minion,
-			"domains": domains,
-		})
-		return
 	}
 
 	err = Update(minion)
@@ -192,6 +180,23 @@ func welcomeHandler(c *gin.Context) {
 	})
 }
 
-func domainHandler(c *gin.Context) {
+func setupHandler(c *gin.Context) {
 
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		c.AbortWithError(http.StatusBadRequest, errors.New("User authenticated but not found"))
+	}
+
+	domains, err := db.GetDomainsForMinion(minion)
+	if err != nil {
+		c.AbortWithError(http.StatusBadRequest, err)
+	}
+
+	c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
+		"minion":  minion,
+		"domains": domains,
+	})
 }
