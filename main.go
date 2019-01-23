@@ -18,13 +18,15 @@ func setupRouting(router *gin.Engine) {
 	router.Static("/static", "static")
 	router.Static("/favicon.ico", "static/favicon.ico")
 
+	router.GET("/", indexHandler)
+
 	router.GET("/welcome", welcomeHandler)
 	router.GET("/auth", authHandler)
 
 	authorized := router.Group("/")
 	authorized.Use(AuthorizeRequest())
 	{
-		authorized.GET("/", indexHandler)
+		authorized.GET("/today", overviewHandler)
 		authorized.GET("/setup", setupHandler)
 	}
 

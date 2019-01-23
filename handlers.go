@@ -79,7 +79,7 @@ type GoogleUser struct {
 }
 
 func authHandler(c *gin.Context) {
-	// Handle the exchange code to initiate a transport.
+
 	session := sessions.Default(c)
 	retrievedState := session.Get("state")
 	if retrievedState != c.Query("state") {
@@ -123,6 +123,14 @@ func authHandler(c *gin.Context) {
 }
 
 func indexHandler(c *gin.Context) {
+	if isAuthorized(c) {
+		overviewHandler(c)
+	} else {
+		welcomeHandler(c)
+	}
+}
+
+func overviewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
