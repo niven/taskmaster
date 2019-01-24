@@ -65,6 +65,10 @@ button {
    cursor: pointer;	
 }
 
+input[type=number]{
+/*    width: 2.5em;*/
+} 
+
 #settings {
 	display: flex;
 }

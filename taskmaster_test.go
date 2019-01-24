@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"testing"
 	"time"
@@ -15,8 +14,8 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 6)
 
-	assigned := []Task{
-		Task{
+	assigned := []TaskAssignment{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: start},
 		},
 	}
@@ -27,7 +26,7 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 	}
 	noTaskCount := 0
 	for _, t := range assigned {
-		if t.ID == NoTask.ID {
+		if t.Task.ID == NoTask.ID {
 			noTaskCount++
 		}
 	}
@@ -41,14 +40,14 @@ func TestFillGapsWithTasksMulti(t *testing.T) {
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 6)
 
-	assigned := []Task{
-		Task{
+	assigned := []TaskAssignment{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: start},
 		},
-		Task{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 2)},
 		},
-		Task{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 4)},
 		},
 	}
@@ -76,8 +75,8 @@ func TestFillGapsWithTasksSingle(t *testing.T) {
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 1)
 	log.Printf("%v %v", start, end)
-	assigned := []Task{
-		Task{
+	assigned := []TaskAssignment{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: start},
 		},
 	}
@@ -98,22 +97,22 @@ func TestFillGapsWithTasksSingle(t *testing.T) {
 
 func TestFindOldestTaskTimeMulti(t *testing.T) {
 
-	tasks := []Task{
-		Task{
+	tasks := []TaskAssignment{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)},
 		},
-		Task{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2008, time.November, 10, 23, 0, 0, 0, time.UTC)},
 		},
-		Task{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2007, time.November, 10, 23, 0, 0, 0, time.UTC)},
 		},
-		Task{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2006, time.November, 10, 23, 0, 0, 0, time.UTC)},
 		},
 	}
 
-	oldest, err := findOldestTaskTime(tasks)
+	oldest, err := findOldestAssignmentTime(tasks)
 	if err != nil {
 		t.Fail()
 	}
@@ -125,9 +124,9 @@ func TestFindOldestTaskTimeMulti(t *testing.T) {
 
 func TestFindOldestTaskTimeEmpty(t *testing.T) {
 
-	var tasks []Task
+	var assignments []TaskAssignment
 
-	_, err := findOldestTaskTime(tasks)
+	_, err := findOldestAssignmentTime(assignments)
 	if err == nil {
 		t.Fail()
 	}
@@ -135,92 +134,19 @@ func TestFindOldestTaskTimeEmpty(t *testing.T) {
 
 func TestFindOldestTaskTimeSingle(t *testing.T) {
 
-	tasks := []Task{
-		Task{
+	assignments := []TaskAssignment{
+		TaskAssignment{
 			AssignedDate: pq.NullTime{Valid: true, Time: time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)},
 		},
 	}
 
-	oldest, err := findOldestTaskTime(tasks)
+	oldest, err := findOldestAssignmentTime(assignments)
 	if err != nil {
 		t.Fail()
 	}
-	if !oldest.Equal(tasks[0].AssignedDate.Time) {
+	if !oldest.Equal(assignments[0].AssignedDate.Time) {
 		t.Fail()
 	}
-}
-
-func TestSplitTasksMany(t *testing.T) {
-
-	m := Minion{
-		ID: 1,
-	}
-	tasks := []Task{
-		Task{
-			AssignedMinionID: sql.NullInt64{Valid: true, Int64: 1},
-		},
-		Task{
-			AssignedMinionID: sql.NullInt64{Valid: true, Int64: 1},
-		},
-		Task{
-			AssignedMinionID: sql.NullInt64{Valid: true, Int64: 2},
-		},
-		Task{},
-	}
-	assigned, available, other := splitTasks(tasks, m)
-
-	if len(assigned)+len(available)+len(other) != len(tasks) {
-		t.Fail()
-	}
-	if len(assigned) != 2 {
-		t.Fail()
-	}
-	if len(available) != 1 {
-		t.Fail()
-	}
-	if len(other) != 1 {
-		t.Fail()
-	}
-
-}
-
-func TestSplitTasksSingle(t *testing.T) {
-
-	m := Minion{
-		ID: 1,
-	}
-	tasks := []Task{
-		Task{
-			AssignedMinionID: sql.NullInt64{Valid: true, Int64: 1},
-		},
-	}
-	assigned, available, other := splitTasks(tasks, m)
-
-	if len(assigned)+len(available)+len(other) != len(tasks) {
-		t.Fail()
-	}
-
-	if len(available)+len(other) != 0 {
-		t.Fail()
-	}
-	if len(assigned) != 1 {
-		t.Fail()
-	}
-
-}
-
-func TestSplitTasksEmpty(t *testing.T) {
-
-	m := Minion{
-		ID: 1,
-	}
-	var tasks []Task
-	assigned, available, other := splitTasks(tasks, m)
-
-	if len(assigned)+len(available)+len(other) != len(tasks) {
-		t.Fail()
-	}
-
 }
 
 func TestMakeContiguousDatesSame(t *testing.T) {

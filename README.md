@@ -121,16 +121,22 @@ DROP TABLE IF EXISTS minions CASCADE; CREATE TABLE IF NOT EXISTS minions (id SER
 
 DROP TABLE IF EXISTS domains CASCADE; CREATE TABLE IF NOT EXISTS domains (id SERIAL PRIMARY KEY, owner INTEGER REFERENCES minions(id), name VARCHAR(255) NOT NULL, last_reset_date DATE NOT NULL DEFAULT CURRENT_DATE ); \d+ domains
 
-DROP TABLE IF EXISTS tasks CASCADE; CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, domain_id INTEGER REFERENCES domains(id), name VARCHAR(255) NOT NULL, weekly BOOLEAN DEFAULT false, description TEXT, state ); \d+ tasks
+DROP TABLE IF EXISTS tasks CASCADE; CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, domain_id INTEGER REFERENCES domains(id), name VARCHAR(255) NOT NULL, weekly BOOLEAN DEFAULT false, description TEXT, count INTEGER NOT NULL DEFAULT 1); \d+ tasks
 
 DROP TABLE IF EXISTS task_state; CREATE TABLE IF NOT EXISTS task_state (task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL, completed_on DATE); \d+ task_state
+
+##### System data
+
+INSERT INTO minions (id, email, name) VALUES(0,'unused','System');
+INSERT INTO domains (id, owner, name) VALUES(0,0,'System');
+
 
 ##### Test Data
 
 INSERT INTO minions (email, name) VALUES ('test@example.com', 'Test User'), ('gru@minions.com', 'Gru');
 INSERT INTO domains (owner, name) VALUES (2, 'Tree House'), (2,'Actual House');
 INSERT INTO tasks (domain_id, name, weekly) VALUES (1, 'Remove leaves', false), (1, 'Wash window', true), (2, 'Laundry', false), (2, 'Dishes', false), (2, 'Clean fridge', true);
-INSERT INTO task_state (task_id, minion_id, assigned_on) VALUES(1, 6, CURRENT_DATE);
+
 
 # Ideas
 
