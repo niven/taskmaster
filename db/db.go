@@ -43,7 +43,6 @@ func CreateMinion(email, name string) error {
 
 func LoadMinion(email string, m *Minion) bool {
 
-	log.Printf("LM for '%s'\n", email)
 	row := db.QueryRow("SELECT * FROM minions WHERE email = $1", email)
 
 	err := row.Scan(&m.ID, &m.Email, &m.Name)
@@ -59,6 +58,17 @@ func CreateNewDomain(minion Minion, domainName string) error {
 
 	if err != nil {
 		log.Printf("Error inserting new domain: %q", err)
+		return err
+	}
+
+	return nil
+}
+
+func CreateNewTask(task Task) error {
+	_, err := db.Exec("INSERT INTO tasks (domain_id, name, weekly, count) VALUES($1, $2, $3, $4)", task.DomainID, task.Name, task.Weekly, task.Count)
+
+	if err != nil {
+		log.Printf("Error inserting new task: %q", err)
 		return err
 	}
 
@@ -186,7 +196,7 @@ func GetTasksForDomain(domain Domain) ([]Task, error) {
 
 	var result []Task
 
-	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count FROM tasks WHERE t.domain_id = $1", domain.ID)
+	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count FROM tasks WHERE domain_id = $1", domain.ID)
 	if err != nil {
 		log.Printf("Error reading tasks: %q", err)
 		return result, err

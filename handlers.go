@@ -213,6 +213,75 @@ func setupHandler(c *gin.Context) {
 	})
 }
 
+func taskNewHandler(c *gin.Context) {
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		errorHandler(c, "User authenticated but not found", nil)
+		return
+	}
+
+	paramCount, presentCount := c.GetPostForm("count")
+	log.Printf("COunt: '%s' = %v\n", paramCount, presentCount)
+	paramDomainID, presentDomainID := c.GetPostForm("domain_id")
+	if !presentCount || !presentDomainID {
+		errorHandler(c, "Missing parameters", nil)
+		return
+	}
+
+	count, err := strconv.Atoi(paramCount)
+	if err != nil {
+		errorHandler(c, "Invalid count", err)
+		return
+	}
+	domainID, err := strconv.Atoi(paramDomainID)
+	if err != nil {
+		errorHandler(c, fmt.Sprintf("Invalid Domain ID: '%s'", paramDomainID), err)
+		return
+	}
+	domain, err := db.GetDomainByID(uint32(domainID))
+	if err != nil || domain.Owner != minion.ID {
+		errorHandler(c, "Domain not found", err)
+		return
+	}
+
+	name := c.DefaultPostForm("name", "Unnamed Task")
+	var weekly bool
+	if c.DefaultPostForm("weekly", "false") == "false" {
+		weekly = false
+	} else {
+		weekly = true
+	}
+
+	task := Task{
+		Name:     name,
+		DomainID: uint32(domainID),
+		Weekly:   weekly,
+		Count:    uint32(count),
+	}
+
+	err = db.CreateNewTask(task)
+	if err != nil {
+		errorHandler(c, "Error creating new task", err)
+		return
+	}
+
+	tasks, err := db.GetTasksForDomain(domain)
+	if err != nil {
+		errorHandler(c, "Domain not found", err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
+		"minion": minion,
+		"domain": domain,
+		"tasks":  tasks,
+	})
+}
+
 func domainNewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
@@ -267,29 +336,11 @@ func domainEditHandler(c *gin.Context) {
 		errorHandler(c, "Domain not found", err)
 		return
 	}
-	/*
-		Create a map of tasks and counts by name, so they can be rendered grouped "Laundry x4" is better than 4 line items
-		This is a bit annoying maybe, since this is a virtual deck of cards it's nice to have each card be a record/object
-		for shuffling and assigning purposes, but since there can be duplicates it's not nice to see a big list of similar
-		stuff.
-
-		For editing the deck we group them up, but then saving is an issue when there are ones that are already assigned or completed.
-		One option is to just reset everything (but that is disruptive), or only reset when deleting cards. Adding is always safe of course.
-	*/
-	countedTasks := make(map[string]int)
-	for _, task := range tasks {
-		count, exists := countedTasks[task.Name]
-		if exists {
-			countedTasks[task.Name] = count + 1
-		} else {
-			countedTasks[task.Name] = 1
-		}
-	}
 
 	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
 		"minion": minion,
 		"domain": domain,
-		"tasks":  countedTasks,
+		"tasks":  tasks,
 	})
 
 }

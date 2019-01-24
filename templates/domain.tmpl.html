@@ -16,8 +16,8 @@ This Deck doesn't have any chores
 <form method="post" action="/task/update">
 		<input type="hidden" name="domain_id" value="{{ .domain.ID }}">
 <ol>
-{{range $name, $count := .tasks}}
-	<li>{{ $name }} x<input type="number" name="{{$name}}" value="{{ $count }}" min="0" max="999"></li>
+{{range .tasks}}
+	<li>{{ .Name }} x<input type="number" name="{{ .Name }}" value="{{ .Count }}" min="0" max="999"></li>
 {{end}}
 </ol>
 		<input type="submit" value="Save">
