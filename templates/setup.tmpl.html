@@ -14,7 +14,7 @@ You don't have any Decks set up!
 
 <ol>
 {{range .domains }}
-	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }}</a></li>
+	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }} ({{ .TaskCount }} tasks)</a></li>
 {{end}}
 </ol>
 

@@ -10,4 +10,5 @@ type Domain struct {
 	Owner         uint32
 	Name          string
 	LastResetDate time.Time
+	TaskCount     uint32
 }

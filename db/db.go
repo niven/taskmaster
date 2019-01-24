@@ -82,7 +82,8 @@ func GetDomainByID(domainID uint32) (Domain, error) {
 
 func GetDomainsForMinion(m Minion) ([]Domain, error) {
 
-	rows, err := db.Query("SELECT id, owner, name, last_reset_date FROM domains WHERE owner = $1", m.ID)
+	rows, err := db.Query("SELECT d.id, d.owner, d.name, d.last_reset_date, COUNT(t.id) AS task_count FROM domains d LEFT JOIN tasks t ON d.id = t.domain_id WHERE owner = $1 GROUP BY d.id", m.ID)
+
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func GetDomainsForMinion(m Minion) ([]Domain, error) {
 	for rows.Next() {
 		var d Domain
 
-		if err := rows.Scan(&d.ID, &d.Owner, &d.Name, &d.LastResetDate); err != nil {
+		if err := rows.Scan(&d.ID, &d.Owner, &d.Name, &d.LastResetDate, &d.TaskCount); err != nil {
 			log.Printf("Error scanning domains: %q", err)
 			return nil, err
 		}
