@@ -181,11 +181,13 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var t Task
+		var taskCount int64
 
-		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &t.Description, &t.Count); err != nil {
+		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &t.Description, &taskCount); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}
+		t.Count = uint32(taskCount)
 		result = append(result, t)
 	}
 
