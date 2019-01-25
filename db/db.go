@@ -194,15 +194,8 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 	return result, nil
 }
 
-func GetTasksForDomain(domain Domain) ([]Task, error) {
-
+func readTasksFromRows(rows *sql.Rows) ([]Task, error) {
 	var result []Task
-
-	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count FROM tasks WHERE domain_id = $1", domain.ID)
-	if err != nil {
-		log.Printf("Error reading tasks: %q", err)
-		return result, err
-	}
 
 	defer rows.Close()
 	for rows.Next() {
@@ -214,8 +207,19 @@ func GetTasksForDomain(domain Domain) ([]Task, error) {
 		}
 		result = append(result, t)
 	}
-
 	return result, nil
+}
+
+func GetTasksForDomain(domain Domain) ([]Task, error) {
+
+	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count FROM tasks WHERE domain_id = $1", domain.ID)
+	if err != nil {
+		log.Printf("Error reading tasks: %q", err)
+		return nil, err
+	}
+
+	result, err := readTasksFromRows(rows)
+	return result, err
 }
 
 // Retrieve all pending tasks for a minion, across all domains
@@ -223,23 +227,20 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT task_id, assigned_on FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT task_id, assigned_on, t.name, t.weekly, t.description FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err
 	}
 
 	defer rows.Close()
-	taskIDs := make(map[uint32]bool)
 	for rows.Next() {
 		var ta TaskAssignment
-		var id uint32
 
-		if err := rows.Scan(&id, &ta.AssignedDate); err != nil {
+		if err := rows.Scan(&ta.Task.ID, &ta.AssignedDate, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}
-		taskIDs[id] = true
 		result = append(result, ta)
 	}
 
