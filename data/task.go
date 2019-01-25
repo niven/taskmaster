@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/lib/pq"
 )
@@ -26,4 +27,15 @@ type TaskAssignment struct {
 	MinionID      sql.NullInt64
 	AssignedDate  pq.NullTime
 	CompletedDate pq.NullTime
+}
+
+func NewTaskAssignment(task Task, minion Minion, time time.Time) TaskAssignment {
+
+	result := TaskAssignment{
+		Task:         task,
+		MinionID:     sql.NullInt64{Int64: int64(minion.ID), Valid: true},
+		AssignedDate: pq.NullTime{Time: time, Valid: true},
+	}
+
+	return result
 }

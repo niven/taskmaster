@@ -64,13 +64,13 @@ func Update(minion Minion) error {
 
 		if len(pendingForDomain[domain.ID]) == 0 {
 			// this minion was either added to this Domain, or the Domain is new today or it was reset
-			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: available[0]})
+			tasksToAssign = append(tasksToAssign, NewTaskAssignment(available[0], minion, today))
 			available = available[1:]
 			continue
 		}
 
 		// Fill any gaps including today with tasks
-		additionalTasks, err := fillGapsWithTasks(pendingForDomain[domain.ID], available, today)
+		additionalTasks, err := fillGapsWithTasks(minion, pendingForDomain[domain.ID], available, today)
 		if err != nil {
 			return err
 		}
@@ -90,7 +90,7 @@ func Update(minion Minion) error {
 /*
 	For every day that doesn't have an assigned task, pick one from the available ones
 */
-func fillGapsWithTasks(assigned []TaskAssignment, available []Task, upToIncluding time.Time) ([]TaskAssignment, error) {
+func fillGapsWithTasks(minion Minion, assigned []TaskAssignment, available []Task, upToIncluding time.Time) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
@@ -127,7 +127,7 @@ func fillGapsWithTasks(assigned []TaskAssignment, available []Task, upToIncludin
 				if len(available) == 0 {
 					result = append(result, TaskAssignment{Task: NoTask})
 				} else {
-					result = append(result, TaskAssignment{Task: available[0]})
+					result = append(result, NewTaskAssignment(available[0], minion, date))
 					available = available[1:]
 				}
 

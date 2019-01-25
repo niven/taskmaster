@@ -18,7 +18,7 @@
 <h1>Pending</h1>
 <ol>
 {{range .pending }}
-	<li> {{ .ID }} - {{ .DomainID }} {{ .Name }} {{ .Weekly }} {{ .Description }} {{ .AssignedDate }}</li>
+	<li> {{ .Task.ID }} - {{ .Task.Name }} {{ .Task.Weekly }} {{ .Task.Description }} {{ .AssignedDate.Time }}</li>
 {{end}}
 </ol>
 

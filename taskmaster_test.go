@@ -11,6 +11,8 @@ import (
 
 func TestFillGapsWithTasksNotEnough(t *testing.T) {
 
+	var minion Minion
+
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 6)
 
@@ -20,7 +22,7 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 		},
 	}
 	var available []Task
-	assigned, err := fillGapsWithTasks(assigned, available, end)
+	assigned, err := fillGapsWithTasks(minion, assigned, available, end)
 	if err != nil {
 		t.Fail()
 	}
@@ -36,6 +38,8 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 }
 
 func TestFillGapsWithTasksMulti(t *testing.T) {
+
+	var minion Minion
 
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 6)
@@ -61,7 +65,7 @@ func TestFillGapsWithTasksMulti(t *testing.T) {
 		Task{},
 	}
 
-	additionalTasks, err := fillGapsWithTasks(assigned, available, end)
+	additionalTasks, err := fillGapsWithTasks(minion, assigned, available, end)
 	if err != nil {
 		t.Fail()
 	}
@@ -71,6 +75,8 @@ func TestFillGapsWithTasksMulti(t *testing.T) {
 }
 
 func TestFillGapsWithTasksSingle(t *testing.T) {
+
+	var minion Minion
 
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 1)
@@ -84,7 +90,7 @@ func TestFillGapsWithTasksSingle(t *testing.T) {
 		Task{},
 	}
 
-	additionalTasks, err := fillGapsWithTasks(assigned, available, end)
+	additionalTasks, err := fillGapsWithTasks(minion, assigned, available, end)
 
 	if err != nil {
 		t.Fail()
