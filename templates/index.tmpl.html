@@ -2,6 +2,7 @@
   {{template "header.tmpl.html"}}
 <body>
 
+{{ template "settings.tmpl.html" }}
 
 <h1>Main page</h1>
 <h2>Logged in as {{ .minion.ID}} {{ .minion.Name }} ({{ .minion.Email }})
@@ -24,16 +25,6 @@
 
 <div id="main">
 
-	<div id="settings">
-		<a href="#" id="gear" onclick="document.getElementById('controls').classList.toggle('closed')">&#9881;</a>
-		
-		<div class="closed" id="controls">
-		Logged in as {{ .minion.Name }} ({{ .minion.Email }})
-			<a href="/setup">Setup</a>
-			<button onclick="state = init(); save(state); go();">Reset</button>	
-			<button onclick="state = load(); let n = next_day(state.current_day); state.debug.current_day = n; update(state,n); save(state); render(state);">Next Day</button>	
-		</div>
-	</div>
 
 </div>
 
