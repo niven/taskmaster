@@ -1,6 +1,6 @@
 <html>
   {{template "header.tmpl.html"}}
-<body>
+<body onload="setup_modal();">
 
 {{ template "settings.tmpl.html" . }}
 
@@ -8,7 +8,7 @@
 	<h1 id="current_day">{{ .today }}</h1>
 	<ul id="today">
 {{range .pending }}
-	<li>{{ .Task.Name }}</li>
+	<li onclick="list_item_click(event)" task-id="{{ .Task.ID }}">{{ .Task.Name }}</li>
 {{end}}
 	</ul>
 	
@@ -31,6 +31,21 @@
 	</div>
 
 </div>
+
+<div class="modal closed" id="modal">
+   <!-- things that don't scroll -->
+
+   <div class="modal-guts">
+     <!-- things that scroll -->
+
+		<h1 id="modal-task-title">TASK</h1>
+		<button id="done-return-button" class="modal-button">Done &amp; Return</button>
+		<button id="done-stash-button" class="modal-button">Done &amp; Stash</button>
+		<button id="close-button" class="modal-button">Close</button>
+   </div>
+	
+</div>
+<div class="modal-overlay closed" id="modal-overlay">
 
 </body>
 </html>

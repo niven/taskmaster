@@ -2,14 +2,10 @@ var state = null;
 
 function list_item_click( event ) {
 	let task_id = event.target.getAttribute("task-id");
-	let clicked_task = state.tasks.pending.find( task => task.id == task_id );
-	
-	console.log( task_id,  clicked_task );
-	if( clicked_task ) {
-		state.task_id_clicked = task_id;
-		open_modal( clicked_task );
-	}
+	let task_name = event.target.innerHTML;
 
+	console.log( task_id, task_name );
+	open_modal( task_id, task_name );
 }
 
 function mark_task_done( task_id, return_to_pool ) {
@@ -39,10 +35,10 @@ function mark_task_done( task_id, return_to_pool ) {
 	close_modal();
 }
 
-function open_modal( task ) {
+function open_modal( task_id, task_name ) {
 	
 	let modal_title = document.getElementById("modal-task-title");
-	modal_title.innerHTML = task.name;
+	modal_title.innerHTML = task_name;
 
 	["modal", "modal-overlay"].forEach( dom_id => document.getElementById(dom_id).classList.toggle("closed") );
 }
