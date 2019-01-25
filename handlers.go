@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -174,6 +175,7 @@ func overviewHandler(c *gin.Context) {
 		"minion":  minion,
 		"domains": domains,
 		"pending": pendingTasks,
+		"today":   time.Now().Format("Monday January 02"),
 	})
 
 }

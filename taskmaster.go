@@ -61,8 +61,7 @@ func Update(minion Minion) error {
 		rand.Shuffle(len(available), func(i, j int) {
 			available[i], available[j] = available[j], available[i]
 		})
-		log.Printf("Available: %v\n", available)
-		log.Printf("pending: %v\n", pendingForDomain[domain.ID])
+
 		if len(available) == 0 {
 			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
 			continue // it's nicer to continue than to have another block indented if we used an else

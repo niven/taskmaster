@@ -2,29 +2,33 @@
   {{template "header.tmpl.html"}}
 <body>
 
-{{ template "settings.tmpl.html" }}
-
-<h1>Main page</h1>
-<h2>Logged in as {{ .minion.ID}} {{ .minion.Name }} ({{ .minion.Email }})
-</h2>
-
-<h1>My Domains</h1>
-<ol>
-{{range .domains }}
-	<li> {{ .ID }} - {{ .Owner }} ({{ .Name }})</li>
-{{end}}
-</ol>
-
-<h1>Pending</h1>
-<ol>
-{{range .pending }}
-	<li> {{ .Task.ID }} - {{ .Task.Name }} {{ .Task.Weekly }} {{ .Task.Description }} {{ .AssignedDate.Time }}</li>
-{{end}}
-</ol>
-
+{{ template "settings.tmpl.html" . }}
 
 <div id="main">
+	<h1 id="current_day">{{ .today }}</h1>
+	<ul id="today">
+{{range .pending }}
+	<li>{{ .Task.Name }}</li>
+{{end}}
+	</ul>
+	
+	<div id="late">
+	
+		<div id="overdue">
+			<h1>Overdue</h1>
+			<ul id="overdue_items">
+					<li>Test</li>
+			</ul>
+		</div>
 
+		<div id="this_week">
+			<h1>This Week</h1>
+			<ul id="week_items">
+					<li>Test</li>
+			</ul>
+		</div>
+	
+	</div>
 
 </div>
 

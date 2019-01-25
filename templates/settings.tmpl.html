@@ -4,6 +4,13 @@
 		<div class="closed" id="controls">
 		Logged in as {{ .minion.Name }} ({{ .minion.Email }})
 			<a href="/setup">Setup</a>
+			<h1>My Domains</h1>
+			<ol>
+			{{range .domains }}
+				<li> {{ .ID }} - {{ .Owner }} ({{ .Name }})</li>
+			{{end}}
+			</ol>
+			
 			<button onclick="state = init(); save(state); go();">Reset</button>	
 			<button onclick="state = load(); let n = next_day(state.current_day); state.debug.current_day = n; update(state,n); save(state); render(state);">Next Day</button>	
 		</div>
