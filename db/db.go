@@ -227,7 +227,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT task_id, assigned_on, t.name, t.weekly, t.description FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err
@@ -237,7 +237,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 	for rows.Next() {
 		var ta TaskAssignment
 
-		if err := rows.Scan(&ta.Task.ID, &ta.AssignedDate, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
+		if err := rows.Scan(&ta.Task.ID, &ta.AssignedDate, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}

@@ -57,6 +57,12 @@ func Update(minion Minion) error {
 			return err
 		}
 
+		// pick random tasks, not in order
+		rand.Shuffle(len(available), func(i, j int) {
+			available[i], available[j] = available[j], available[i]
+		})
+		log.Printf("Available: %v\n", available)
+		log.Printf("pending: %v\n", pendingForDomain[domain.ID])
 		if len(available) == 0 {
 			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
 			continue // it's nicer to continue than to have another block indented if we used an else
@@ -108,11 +114,6 @@ func fillGapsWithTasks(minion Minion, assigned []TaskAssignment, available []Tas
 	if len(assigned) < len(dates) {
 
 		// TODO: Remove assigned tasks to avoid dupes
-
-		// pick random tasks, not in order
-		rand.Shuffle(len(available), func(i, j int) {
-			available[i], available[j] = available[j], available[i]
-		})
 
 		// make a map so we can easily find the missing dates
 		// and use strDates so it's always YYYY-MM-DD and not some time object with a milli off
