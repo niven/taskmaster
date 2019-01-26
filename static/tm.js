@@ -26,7 +26,7 @@ function mark_task_done( task_assignment_id, return_task ) {
 		 	location = "/overview"
 	    }
 	}
-	xhr.send("task_assignment_id=" + task_id + "&return_task=" + return_task); 
+	xhr.send("task_assignment_id=" + task_assignment_id + "&return_task=" + return_task); 
 
 	close_modal();
 }
