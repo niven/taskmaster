@@ -256,12 +256,13 @@ func taskDoneHandler(c *gin.Context) {
 	}
 
 	if returnTask {
+		db.AssignmentDelete(assignment)
+	} else {
 		assignment.CompletedDate = pq.NullTime{Time: time.Now(), Valid: true}
 		db.AssignmentUpdate(assignment)
-	} else {
-		db.AssignmentDelete(assignment)
 	}
 
+	c.JSON(http.StatusOK, nil)
 }
 
 func taskNewHandler(c *gin.Context) {
