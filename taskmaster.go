@@ -85,7 +85,7 @@ func Update(minion Minion) error {
 
 	for _, t := range tasksToAssign {
 		if t.Task.ID != NoTask.ID {
-			db.SaveTaskAssignment(t)
+			db.AssignmentInsert(t)
 		}
 	}
 

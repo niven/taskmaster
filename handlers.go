@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -171,6 +172,9 @@ func overviewHandler(c *gin.Context) {
 		return
 	}
 
+	// split in Today, This Week, Overdue
+	// Split
+
 	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
 		"minion":  minion,
 		"domains": domains,
@@ -215,6 +219,51 @@ func setupHandler(c *gin.Context) {
 	})
 }
 
+func taskDoneHandler(c *gin.Context) {
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		errorHandler(c, "User authenticated but not found", nil)
+		return
+	}
+
+	paramTaskID, presentTaskID := c.GetPostForm("task_id")
+	paramReturnTask, presentReturnTask := c.GetPostForm("return_task")
+	if !presentTaskID || !presentReturnTask {
+		errorHandler(c, "Missing parameters", nil)
+		return
+	}
+
+	taskID, err := strconv.Atoi(paramTaskID)
+	if err != nil {
+		errorHandler(c, "Invalid task ID", err)
+		return
+	}
+	var returnTask bool
+	if paramReturnTask == "true" {
+		returnTask = true
+	} else {
+		returnTask = false
+	}
+
+	assignment, err := db.AssignmentRetrieve(minion, int64(taskID))
+	if err != nil {
+		errorHandler(c, "No such assignment", err)
+		return
+	}
+
+	if returnTask {
+		assignment.CompletedDate = pq.NullTime{Time: time.Now(), Valid: true}
+		db.AssignmentUpdate(assignment)
+	} else {
+		db.AssignmentDelete(assignment)
+	}
+
+}
+
 func taskNewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
@@ -227,7 +276,6 @@ func taskNewHandler(c *gin.Context) {
 	}
 
 	paramCount, presentCount := c.GetPostForm("count")
-	log.Printf("COunt: '%s' = %v\n", paramCount, presentCount)
 	paramDomainID, presentDomainID := c.GetPostForm("domain_id")
 	if !presentCount || !presentDomainID {
 		errorHandler(c, "Missing parameters", nil)

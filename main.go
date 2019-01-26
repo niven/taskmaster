@@ -41,6 +41,7 @@ func setupRouting(router *gin.Engine) {
 	task.Use(AuthorizeRequest())
 	{
 		task.POST("/new", taskNewHandler)
+		task.POST("/done", taskDoneHandler)
 	}
 
 }

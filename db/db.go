@@ -136,21 +136,9 @@ func ReadAllMinions() ([]Minion, error) {
 	return result, nil
 }
 
-func SaveTaskAssignment(assignment TaskAssignment) error {
-
-	strDate := util.StrDateFromTime(assignment.AssignedDate.Time)
-	_, err := db.Exec("INSERT INTO task_state (task_id, minion_id, assigned_on) VALUES($1,$2,$3)", assignment.Task.ID, assignment.MinionID, strDate)
-
-	if err != nil {
-		log.Printf("Error inserting new minion: %q", err)
-		return err
-	}
-	return nil
-}
-
 func ResetAllCompletedTasks(domain Domain) error {
 
-	result, err := db.Exec("DELETE FROM task_state WHERE completed_on IS NOT NULL AND domain_id = $1", domain.ID)
+	result, err := db.Exec("DELETE FROM task_assignments WHERE completed_on IS NOT NULL AND domain_id = $1", domain.ID)
 	if err != nil {
 		return err
 	}
@@ -172,7 +160,7 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 
 	var result []Task
 
-	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count - COUNT(ts.task_id) FROM tasks t LEFT JOIN task_state ts ON t.id=ts.task_id WHERE domain_id = $1 GROUP BY id;", domain.ID)
+	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count - COUNT(ts.task_id) FROM tasks t LEFT JOIN task_assignments ts ON t.id=ts.task_id WHERE domain_id = $1 GROUP BY id;", domain.ID)
 	if err != nil {
 		log.Printf("Error reading tasks: %q", err)
 		return result, err
@@ -222,12 +210,66 @@ func GetTasksForDomain(domain Domain) ([]Task, error) {
 	return result, err
 }
 
+func AssignmentInsert(assignment TaskAssignment) error {
+
+	strDate := util.StrDateFromTime(assignment.AssignedDate.Time)
+	_, err := db.Exec("INSERT INTO task_assignments (task_id, minion_id, assigned_on) VALUES($1,$2,$3)", assignment.Task.ID, assignment.MinionID, strDate)
+
+	if err != nil {
+		log.Printf("Error inserting new minion: %q", err)
+		return err
+	}
+	return nil
+}
+
+func AssignmentUpdate(assignment TaskAssignment) error {
+
+	strDateAssigned := util.StrDateFromTime(assignment.AssignedDate.Time)
+	strDateCompleted := util.StrDateFromTime(assignment.CompletedDate.Time)
+	_, err := db.Exec("UPDATE task_assignments SET assigned_on = $1, completed_on = $2 WHERE ", strDateAssigned, strDateCompleted)
+
+	if err != nil {
+		log.Printf("Error updating assignment: %q", err)
+		return err
+	}
+	return nil
+}
+
+func AssignmentDelete(assignment TaskAssignment) error {
+
+	_, err := db.Exec("DELETE FROM task_assignments WHERE id = $1", assignment.ID)
+
+	if err != nil {
+		log.Printf("Error deleting assignment: %q", err)
+		return err
+	}
+	return nil
+}
+
+func AssignmentRetrieve(minion Minion, taskID int64) (TaskAssignment, error) {
+
+	var result TaskAssignment
+
+	rows, err := db.Query("SELECT task_id, assigned_on, completed_on FROM task_assignments minion_id = $1 AND task_id = $2", minion.ID, taskID)
+	if err != nil {
+		log.Printf("Error reading assignment: %q", err)
+		return result, err
+	}
+
+	if err := rows.Scan(&result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
+		log.Printf("Error scanning assignment: %q", err)
+		return result, err
+	}
+
+	return result, nil
+}
+
 // Retrieve all pending tasks for a minion, across all domains
 func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_state AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err

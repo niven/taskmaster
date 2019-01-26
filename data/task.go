@@ -23,6 +23,7 @@ var NoTask = Task{
 }
 
 type TaskAssignment struct {
+	ID            uint32
 	Task          Task
 	MinionID      sql.NullInt64
 	AssignedDate  pq.NullTime

@@ -8,29 +8,27 @@ function list_item_click( event ) {
 	open_modal( task_id, task_name );
 }
 
-function mark_task_done( task_id, return_to_pool ) {
+function mark_task_done( task_id, return_task ) {
 	
 	
-	let task = state.tasks.pending.find( task => task.id == task_id );
-	
-	// remove this instead of setting to true since we don't care about it being done as such
-	delete task["done"];
-	
-	state.tasks.pending = state.tasks.pending.filter( task => task.id != task_id );
-	console.log( task_id, return_to_pool, task );
+
+	console.log( task_id, return_task );
 	
 	// either return it to the pool so it can come up again, or stash it away
-	// so you won't see it again this (week|month)?
-	if( return_to_pool ) {
-		state.tasks.available.push( task );
-	} else {
-		state.tasks.stashed.push( task );
-	}
+	// so you won't see it again this month)
 	
-	save( state );
-	console.log("markdone", state);
+	var xhr = new XMLHttpRequest();
+	xhr.open("POST", '/task/done', true);
 
-	render( state );
+	//Send the proper header information along with the request
+	xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+	xhr.onreadystatechange = function() { // Call a function when the state changes.
+	    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+		 	location = "/overview"
+	    }
+	}
+	xhr.send("task_id=" + task_id + "&return_task=" + return_task); 
 
 	close_modal();
 }
