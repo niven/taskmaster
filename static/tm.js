@@ -23,7 +23,7 @@ function mark_task_done( task_assignment_id, return_task ) {
 
 	xhr.onreadystatechange = function() { // Call a function when the state changes.
 	    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-		 	location = "/overview"
+		 	location = "/today"
 	    }
 	}
 	xhr.send("task_assignment_id=" + task_assignment_id + "&return_task=" + return_task); 
