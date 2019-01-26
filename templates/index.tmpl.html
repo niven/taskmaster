@@ -1,6 +1,6 @@
 <html>
   {{template "header.tmpl.html"}}
-<body onload="setup_modal();">
+<body onload="init();">
 
 {{ template "settings.tmpl.html" . }}
 
@@ -8,7 +8,7 @@
 	<h1 id="current_day">{{ .today }}</h1>
 	<ul id="today">
 {{range .pending }}
-	<li onclick="list_item_click(event)" task-id="{{ .Task.ID }}">{{ .Task.Name }}</li>
+	<li class="task" task-id="{{ .Task.ID }}">{{ .Task.Name }}</li>
 {{end}}
 	</ul>
 	

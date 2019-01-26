@@ -127,8 +127,26 @@ function render( state ) {
 	document.getElementById("state").innerHTML = JSON.stringify( state, null, "\t" );
 }
 
+function general_click_handler( event ) {
+
+	let elementClass = event.target.getAttribute("class");
+	
+	if( elementClass == "" ) {
+		return;
+	}
+	
+	switch( elementClass ) {
+		case "task": {
+			list_item_click( event )
+			break;
+		}
+	}
+}
 
 
-function go() {
-
+function init() {
+	
+	setup_modal();
+	
+	document.addEventListener('click', general_click_handler, false);
 }
