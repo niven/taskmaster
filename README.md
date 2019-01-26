@@ -20,23 +20,38 @@ The code is hosted on github. When I push Travis CI runs tests and a code covera
 
 The thing then runs on Heroku
 
-#### prerequisites
+### prerequisites
 
 - accounts: gitub, heroku, travis-ci.org, codecov.io (latter 2 through github)
 - Heroku, Git, Go, Postgres (+ CLI tools)
 
 ### initial setup
 
-- install Go stuff
-	- go get -u github.com/gin-gonic/gin
-		- web framework
-	- set -x PATH $PATH $GOPATH/bin/
+#### Go dependencies
+
+set -x PATH $PATH $GOPATH/bin/
+
+web framework:
+go get -u github.com/gin-gonic/gin
+
+i18n text stuff:
+go get golang.org/x/text/language
+go get golang.org/x/text/message
+go get -u golang.org/x/text/cmd/gotext
+
+so we can vendor things, and Heroku needs this for a buildpack
+https://gocodecloud.com/blog/2016/03/29/go-vendoring-beginner-tutorial/
+go get -u github.com/kardianos/govendor
+
+Postgres driver and stuff:
+go get github.com/lib/pq
+
+Other stuff: google-oauth, various gin contrib
+
+#### Steps
 
 - create a new repo on github
 - write some code + tests
-- go get -u github.com/kardianos/govendor
-	- so we can vendor things, and Heroku needs this for a buildpack
-	- https://gocodecloud.com/blog/2016/03/29/go-vendoring-beginner-tutorial/
 - govendor init
 	- git add -A vendor
 	- git commit -am "Setup Vendor"
