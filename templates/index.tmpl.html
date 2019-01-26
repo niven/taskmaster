@@ -8,7 +8,7 @@
 	<h1 id="current_day">{{ .today }}</h1>
 	<ul id="today">
 {{range .pending }}
-	<li class="task" task-id="{{ .ID }}">{{ .Task.Name }}</li>
+	<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
 {{end}}
 	</ul>
 	

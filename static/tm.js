@@ -1,18 +1,16 @@
 var state = null;
 
 function list_item_click( event ) {
-	let task_id = event.target.getAttribute("task-id");
+	let task_assignment_id = event.target.getAttribute("task-assignment-id");
 	let task_name = event.target.innerHTML;
 
-	console.log( task_id, task_name );
-	open_modal( task_id, task_name );
+	console.log( task_assignment_id, task_name );
+	open_modal( task_assignment_id, task_name );
 }
 
-function mark_task_done( task_id, return_task ) {
-	
-	
+function mark_task_done( task_assignment_id, return_task ) {
 
-	console.log( task_id, return_task );
+	console.log( task_assignment_id, return_task );
 	
 	// either return it to the pool so it can come up again, or stash it away
 	// so you won't see it again this month)
@@ -28,15 +26,18 @@ function mark_task_done( task_id, return_task ) {
 		 	location = "/overview"
 	    }
 	}
-	xhr.send("task_id=" + task_id + "&return_task=" + return_task); 
+	xhr.send("task_assignment_id=" + task_id + "&return_task=" + return_task); 
 
 	close_modal();
 }
 
-function open_modal( task_id, task_name ) {
+function open_modal( task_assignment_id, task_name ) {
 	
 	let modal_title = document.getElementById("modal-task-title");
 	modal_title.innerHTML = task_name;
+
+	document.querySelector("#done-return-button").setAttribute("task-assignment-id", task_assignment_id);
+	document.querySelector("#done-stash-button").setAttribute("task-assignment-id", task_assignment_id);
 
 	["modal", "modal-overlay"].forEach( dom_id => document.getElementById(dom_id).classList.toggle("closed") );
 }
@@ -53,8 +54,8 @@ function setup_modal() {
 	let done_stash_button = document.querySelector("#done-stash-button");
 
 	close_button.onclick = close_modal;
-	done_return_button.onclick = function() { mark_task_done( state.task_id_clicked, true ) };
-	done_stash_button.onclick = function() { mark_task_done( state.task_id_clicked, false ) };
+	done_return_button.onclick = function( event ) { mark_task_done( event.target.getAttribute("task-assignment-id"), true ) };
+	done_stash_button.onclick = function( event ) { mark_task_done( event.target.getAttribute("task-assignment-id"), false ) };
 }
 
 function clear( element ) {
@@ -134,7 +135,7 @@ function general_click_handler( event ) {
 	}
 	
 	switch( elementClass ) {
-		case "task": {
+		case "task_assignment": {
 			list_item_click( event )
 			break;
 		}
