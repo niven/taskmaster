@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/gin-contrib/sessions"
@@ -10,6 +11,10 @@ import (
 
 	"github.com/niven/taskmaster/config"
 )
+
+func init() {
+	log.SetFlags(log.Ldate | log.Ltime | log.LUTC | log.Lshortfile)
+}
 
 var store = cookie.NewStore([]byte("secret"))
 
