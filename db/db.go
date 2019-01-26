@@ -160,9 +160,9 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 
 	var result []Task
 
-	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count - COUNT(ts.task_id) FROM tasks t LEFT JOIN task_assignments ts ON t.id=ts.task_id WHERE domain_id = $1 GROUP BY id;", domain.ID)
+	rows, err := db.Query("SELECT t.id, domain_id, name, weekly, description, count - COUNT(ta.task_id) FROM tasks t LEFT JOIN task_assignments ta ON t.id = ta.task_id WHERE domain_id = $1 GROUP BY t.id", domain.ID)
 	if err != nil {
-		log.Printf("Error reading tasks: %q", err)
+		log.Printf("Error reading tasks: %q\n", err)
 		return result, err
 	}
 
