@@ -250,13 +250,9 @@ func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
 
 	var result TaskAssignment
 
-	rows, err := db.Query("SELECT id, task_id, assigned_on, completed_on FROM task_assignments WHERE id = $1", taskAssignmentID)
-	if err != nil {
-		log.Printf("Error reading assignment: %q", err)
-		return result, err
-	}
+	row := db.QueryRow("SELECT id, task_id, assigned_on, completed_on FROM task_assignments WHERE id = $1", taskAssignmentID)
 
-	if err := rows.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
+	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
 		log.Printf("Error scanning assignment: %q", err)
 		return result, err
 	}
