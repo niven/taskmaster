@@ -230,14 +230,14 @@ func taskDoneHandler(c *gin.Context) {
 		return
 	}
 
-	paramTaskID, presentTaskID := c.GetPostForm("task_id")
+	paramTaskAssignmentID, presentTaskAssignmentID := c.GetPostForm("task_id")
 	paramReturnTask, presentReturnTask := c.GetPostForm("return_task")
-	if !presentTaskID || !presentReturnTask {
+	if !presentTaskAssignmentID || !presentReturnTask {
 		errorHandler(c, "Missing parameters", nil)
 		return
 	}
 
-	taskID, err := strconv.Atoi(paramTaskID)
+	taskAssignmentID, err := strconv.Atoi(paramTaskAssignmentID)
 	if err != nil {
 		errorHandler(c, "Invalid task ID", err)
 		return
@@ -249,7 +249,7 @@ func taskDoneHandler(c *gin.Context) {
 		returnTask = false
 	}
 
-	assignment, err := db.AssignmentRetrieve(minion, int64(taskID))
+	assignment, err := db.AssignmentRetrieve(int64(taskAssignmentID))
 	if err != nil {
 		errorHandler(c, "No such assignment", err)
 		return

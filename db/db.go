@@ -202,7 +202,7 @@ func GetTasksForDomain(domain Domain) ([]Task, error) {
 
 	rows, err := db.Query("SELECT id, domain_id, name, weekly, description, count FROM tasks WHERE domain_id = $1", domain.ID)
 	if err != nil {
-		log.Printf("Error reading tasks: %q", err)
+		log.Printf("Error reading tasks for domain: %q", err)
 		return nil, err
 	}
 
@@ -226,7 +226,7 @@ func AssignmentUpdate(assignment TaskAssignment) error {
 
 	strDateAssigned := util.StrDateFromTime(assignment.AssignedDate.Time)
 	strDateCompleted := util.StrDateFromTime(assignment.CompletedDate.Time)
-	_, err := db.Exec("UPDATE task_assignments SET assigned_on = $1, completed_on = $2 WHERE ", strDateAssigned, strDateCompleted)
+	_, err := db.Exec("UPDATE task_assignments SET assigned_on = $1, completed_on = $2 WHERE id = $3", strDateAssigned, strDateCompleted, assignment.ID)
 
 	if err != nil {
 		log.Printf("Error updating assignment: %q", err)
@@ -246,17 +246,17 @@ func AssignmentDelete(assignment TaskAssignment) error {
 	return nil
 }
 
-func AssignmentRetrieve(minion Minion, taskID int64) (TaskAssignment, error) {
+func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
 
 	var result TaskAssignment
 
-	rows, err := db.Query("SELECT task_id, assigned_on, completed_on FROM task_assignments minion_id = $1 AND task_id = $2", minion.ID, taskID)
+	rows, err := db.Query("SELECT id, task_id, assigned_on, completed_on FROM task_assignments WHERE id = ", taskAssignmentID)
 	if err != nil {
 		log.Printf("Error reading assignment: %q", err)
 		return result, err
 	}
 
-	if err := rows.Scan(&result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
+	if err := rows.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
 		log.Printf("Error scanning assignment: %q", err)
 		return result, err
 	}
@@ -269,7 +269,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ts LEFT JOIN tasks AS t ON ts.task_id = t.id WHERE completed_on IS NULL AND ts.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT ta.id, task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err
@@ -279,7 +279,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 	for rows.Next() {
 		var ta TaskAssignment
 
-		if err := rows.Scan(&ta.Task.ID, &ta.AssignedDate, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
+		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}
