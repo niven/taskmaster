@@ -14,17 +14,29 @@
 	
 	<div id="late">
 	
-		<div id="overdue">
+{{ $overdue_class := "" }}
+{{ if not .overdue }}
+	{{ $overdue_class = "closed" }}
+{{ end }}	
+		<div id="overdue" class="{{ $overdue_class }}">
 			<h1>Overdue</h1>
 			<ul id="overdue_items">
-					<li>Test</li>
+			{{range .overdue }}
+				<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
+			{{end}}
 			</ul>
 		</div>
 
-		<div id="this_week">
+{{ $this_week_class := "" }}
+{{ if not .this_week }}
+	{{ $this_week_class = "closed" }}
+{{ end }}	
+		<div id="this_week" class="{{ $this_week_class }}">
 			<h1>This Week</h1>
 			<ul id="week_items">
-					<li>Test</li>
+			{{range .this_week }}
+				<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
+			{{end}}
 			</ul>
 		</div>
 	
