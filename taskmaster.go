@@ -130,13 +130,9 @@ func filterTasks(available []Task, assigned []TaskAssignment) []Task {
 		// Count is an unsigned int, avoid underflowing
 		if exists && task.Count > 0 {
 			task.Count--
-			log.Printf("Count dec: %v\n", task)
 		}
 		// ignore ones that are assigned and not available
-		log.Printf("Count now: %v\n", task)
-		log.Printf("Hash now %v\n", hash)
 	}
-	log.Printf("Hash upd %v\n", hash)
 
 	// output all tasks that have a Count > 0
 	var result []Task
