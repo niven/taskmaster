@@ -250,9 +250,9 @@ func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
 
 	var result TaskAssignment
 
-	row := db.QueryRow("SELECT id, task_id, assigned_on, completed_on FROM task_assignments WHERE id = $1", taskAssignmentID)
+	row := db.QueryRow("SELECT id, task_id, assigned_on, completed_on, CURRENT_DATE - assigned_on AS days_old FROM task_assignments WHERE id = $1", taskAssignmentID)
 
-	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate); err != nil {
+	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate, &result.AgeInDays); err != nil {
 		log.Printf("Error scanning assignment: %q", err)
 		return result, err
 	}
@@ -265,7 +265,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT ta.id, task_id, assigned_on, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1", minion.ID)
+	rows, err := db.Query("SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1", minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err
@@ -275,7 +275,7 @@ func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
 	for rows.Next() {
 		var ta TaskAssignment
 
-		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
+		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.AgeInDays, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}
