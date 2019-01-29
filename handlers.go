@@ -166,7 +166,7 @@ func overviewHandler(c *gin.Context) {
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
-	pendingTaskAssignments, err := db.GetPendingTasksForMinion(minion)
+	pendingTaskAssignments, err := db.AssignmentRetrieveForMinion(minion, false)
 	if err != nil {
 		errorHandler(c, "", err)
 		return

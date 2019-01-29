@@ -28,7 +28,7 @@ func Update(minion Minion) error {
 	if err != nil {
 		return err
 	}
-	pendingTasks, err := db.GetPendingTasksForMinion(minion)
+	pendingTasks, err := db.AssignmentRetrieveForMinion(minion, true)
 	if err != nil {
 		return err
 	}

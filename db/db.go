@@ -261,11 +261,16 @@ func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
 }
 
 // Retrieve all pending tasks for a minion, across all domains
-func GetPendingTasksForMinion(minion Minion) ([]TaskAssignment, error) {
+func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
-	rows, err := db.Query("SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1", minion.ID)
+	sql := "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1"
+	if includeCompleted {
+		sql = "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE ta.minion_id = $1"
+	}
+
+	rows, err := db.Query(sql, minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
 		return result, err
