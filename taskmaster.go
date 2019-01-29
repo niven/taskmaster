@@ -96,6 +96,35 @@ func Update(minion Minion) error {
 	return nil
 }
 
+// split pending assignments into 3 lists: those for the current date, overdue ones and weekly ones
+// Note: weekly ones become overdue based on the day the week starts
+func SplitTaskAssignments(pendingTaskAssignments []TaskAssignment, now time.Time) ([]TaskAssignment, []TaskAssignment, []TaskAssignment) {
+
+	var today, thisWeek, overdue []TaskAssignment
+
+	for _, assignment := range pendingTaskAssignments {
+		log.Printf("date: %s, age:%d\n", util.StrDateFromTime(assignment.AssignedDate.Time), assignment.AgeInDays)
+		if assignment.AgeInDays == 0 {
+			today = append(today, assignment)
+			continue
+		}
+		if !assignment.Task.Weekly || assignment.AgeInDays > 6 {
+			overdue = append(overdue, assignment)
+			continue
+		}
+
+		// previous weekend or any weekday later than today must belong to last week
+		day := assignment.AssignedDate.Time.Weekday()
+		if day > now.Weekday() || util.IsWeekendDay(day) {
+			overdue = append(overdue, assignment)
+		} else {
+			thisWeek = append(thisWeek, assignment)
+		}
+	}
+
+	return today, thisWeek, overdue
+}
+
 /*
 	Available:
 		Foo x2
@@ -126,7 +155,6 @@ func filterTasks(available []Task, assigned []TaskAssignment) []Task {
 	// update their availability count
 	for _, assignment := range assigned {
 		task, exists := hash[assignment.Task.ID]
-		log.Printf("Count check for tid %d: %v\n", assignment.Task.ID, task)
 		// Count is an unsigned int, avoid underflowing
 		if exists && task.Count > 0 {
 			task.Count--

@@ -7,7 +7,100 @@ import (
 
 	"github.com/lib/pq"
 	. "github.com/niven/taskmaster/data"
+	. "github.com/niven/taskmaster/util"
 )
+
+func TestSplitTaskAssignments(t *testing.T) {
+
+	now := DateFromYYYYMMDD(2019, time.January, 29) // tuesday
+
+	pending := []TaskAssignment{
+		// 2 for today
+		TaskAssignment{
+			AgeInDays:    0,
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 29)},
+		},
+		TaskAssignment{
+			AgeInDays:    0,
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 29)},
+		},
+		// 8 weekly for each weekday including this one
+		TaskAssignment{
+			AgeInDays:    0,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 29)}, // tue
+		},
+		TaskAssignment{
+			AgeInDays:    1,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 28)}, // mon
+		},
+		// these weeklies should be overdue
+		TaskAssignment{
+			AgeInDays:    2,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 27)}, // sun
+		},
+		TaskAssignment{
+			AgeInDays:    3,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 26)}, // sat
+		},
+		TaskAssignment{
+			AgeInDays:    4,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 25)}, // fri
+		},
+		TaskAssignment{
+			AgeInDays:    5,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 24)}, // thu
+		},
+		TaskAssignment{
+			AgeInDays:    6,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 23)}, // wed
+		},
+		TaskAssignment{
+			AgeInDays:    7,
+			Task:         Task{Weekly: true},
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 22)}, // tue
+		},
+		// a few regular overdue ones
+		TaskAssignment{
+			AgeInDays:    18,
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 11)},
+		},
+		TaskAssignment{
+			AgeInDays:    21,
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2019, time.January, 8)},
+		},
+		TaskAssignment{
+			AgeInDays:    300,
+			AssignedDate: pq.NullTime{Valid: true, Time: DateFromYYYYMMDD(2018, time.December, 2)},
+		},
+	}
+
+	today, thisWeek, overdue := SplitTaskAssignments(pending, now)
+	for _, ta := range today {
+		log.Printf("today: %v\n", StrDateFromTime(ta.AssignedDate.Time))
+	}
+	for _, ta := range thisWeek {
+		log.Printf("week: %v\n", StrDateFromTime(ta.AssignedDate.Time))
+	}
+	for _, ta := range overdue {
+		log.Printf("overdue: %v\n", StrDateFromTime(ta.AssignedDate.Time))
+	}
+	if len(today) != 3 { // 2 for today + 1 weekly for today
+		t.Fail()
+	}
+	if len(thisWeek) != 1 { // only 2 weekly is for this week, the rest is overdue, and onlty 1 is not today
+		t.Fail()
+	}
+	if len(today)+len(thisWeek)+len(overdue) != len(pending) { // the rest is overdue
+		t.Fail()
+	}
+}
 
 func TestFilterTasksExample(t *testing.T) {
 

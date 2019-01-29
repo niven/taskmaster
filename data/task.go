@@ -27,6 +27,7 @@ type TaskAssignment struct {
 	Task          Task
 	MinionID      sql.NullInt64
 	AssignedDate  pq.NullTime
+	AgeInDays     uint32
 	CompletedDate pq.NullTime
 }
 

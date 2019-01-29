@@ -157,3 +157,5 @@ INSERT INTO tasks (domain_id, name, weekly) VALUES (1, 'Remove leaves', false), 
 # Ideas
 
 Might be nice ot have a domain like tm.interdictor.org or somehting at least.
+
+Depending on locale weekends might not be Sat+Sun

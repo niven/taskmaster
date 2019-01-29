@@ -166,20 +166,23 @@ func overviewHandler(c *gin.Context) {
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
-	pendingTasks, err := db.GetPendingTasksForMinion(minion)
+	pendingTaskAssignments, err := db.GetPendingTasksForMinion(minion)
 	if err != nil {
 		errorHandler(c, "", err)
 		return
 	}
 
 	// split in Today, This Week, Overdue
-	// Split
+	now := time.Now()
+	today, this_week, overdue := SplitTaskAssignments(pendingTaskAssignments, now)
 
 	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
-		"minion":  minion,
-		"domains": domains,
-		"pending": pendingTasks,
-		"today":   time.Now().Format("Monday January 02"),
+		"minion":    minion,
+		"domains":   domains,
+		"pending":   today,
+		"this_week": this_week,
+		"overdue":   overdue,
+		"today":     now.Format("Monday January 02"),
 	})
 
 }
