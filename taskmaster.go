@@ -57,15 +57,19 @@ func Update(minion Minion) error {
 			return err
 		}
 
-		// pick random tasks, not in order
-		rand.Shuffle(len(available), func(i, j int) {
-			available[i], available[j] = available[j], available[i]
-		})
+		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue
+		// laundry
+		available = filterTasks(available, pendingForDomain[domain.ID])
 
 		if len(available) == 0 {
 			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
 			continue // it's nicer to continue than to have another block indented if we used an else
 		}
+
+		// pick random tasks, not in order
+		rand.Shuffle(len(available), func(i, j int) {
+			available[i], available[j] = available[j], available[i]
+		})
 
 		if len(pendingForDomain[domain.ID]) == 0 {
 			// this minion was either added to this Domain, or the Domain is new today or it was reset
@@ -90,6 +94,59 @@ func Update(minion Minion) error {
 	}
 
 	return nil
+}
+
+/*
+	Available:
+		Foo x2
+		Bar x3
+		Rez x1
+	Assigned:
+		Foo
+		Foo
+		Bar
+		Qux
+
+	Output:
+		Bar x2
+		Rez x1
+*/
+func filterTasks(available []Task, assigned []TaskAssignment) []Task {
+
+	if assigned == nil || len(assigned) == 0 {
+		return available
+	}
+
+	// store ones we have
+	hash := make(map[uint32]*Task)
+	for idx, task := range available {
+		hash[task.ID] = &available[idx]
+	}
+
+	// update their availability count
+	for _, assignment := range assigned {
+		task, exists := hash[assignment.Task.ID]
+		log.Printf("Count check for tid %d: %v\n", assignment.Task.ID, task)
+		// Count is an unsigned int, avoid underflowing
+		if exists && task.Count > 0 {
+			task.Count--
+			log.Printf("Count dec: %v\n", task)
+		}
+		// ignore ones that are assigned and not available
+		log.Printf("Count now: %v\n", task)
+		log.Printf("Hash now %v\n", hash)
+	}
+	log.Printf("Hash upd %v\n", hash)
+
+	// output all tasks that have a Count > 0
+	var result []Task
+	for _, task := range hash {
+		if task.Count > 0 {
+			result = append(result, *task)
+		}
+	}
+
+	return result
 }
 
 /*

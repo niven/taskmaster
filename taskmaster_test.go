@@ -9,6 +9,90 @@ import (
 	. "github.com/niven/taskmaster/data"
 )
 
+func TestFilterTasksExample(t *testing.T) {
+
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			Task: Task{ID: 123},
+		},
+		TaskAssignment{
+			Task: Task{ID: 123},
+		},
+		TaskAssignment{
+			Task: Task{ID: 234},
+		},
+		TaskAssignment{
+			Task: Task{ID: 456},
+		},
+	}
+	available := []Task{
+		Task{ID: 123, Count: 2},
+		Task{ID: 234, Count: 3},
+		Task{ID: 345, Count: 1},
+	}
+
+	result := filterTasks(available, assigned)
+
+	if len(result) != 2 {
+		t.Fail()
+	}
+}
+
+func TestFilterTasks1Remaining(t *testing.T) {
+
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			Task: Task{ID: 123},
+		},
+	}
+	available := []Task{
+		Task{ID: 123, Count: 1},
+		Task{ID: 234, Count: 10},
+	}
+
+	result := filterTasks(available, assigned)
+
+	if len(result) != 1 {
+		t.Fail()
+	}
+	if result[0].Count != 10 {
+		t.Fail()
+	}
+}
+
+func TestFilterTasksNoOverlap(t *testing.T) {
+
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			Task: Task{ID: 3},
+		},
+	}
+	available := []Task{
+		Task{ID: 1, Count: 10},
+		Task{ID: 2, Count: 10},
+	}
+
+	result := filterTasks(available, assigned)
+
+	if len(result) != len(available) {
+		t.Fail()
+	}
+	if result[0].Count != 10 || result[1].Count != 10 {
+		t.Fail()
+	}
+}
+
+func TestFilterTasksEmpty(t *testing.T) {
+
+	var assigned []TaskAssignment
+	var available []Task
+
+	result := filterTasks(available, assigned)
+	if len(result) != 0 {
+		t.Fail()
+	}
+}
+
 func TestFillGapsWithTasksNotEnough(t *testing.T) {
 
 	var minion Minion

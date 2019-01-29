@@ -29,6 +29,7 @@ The thing then runs on Heroku
 
 #### Go dependencies
 
+(fish shell)
 set -x PATH $PATH $GOPATH/bin/
 
 web framework:
