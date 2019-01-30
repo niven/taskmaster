@@ -28,18 +28,24 @@ func Update(minion Minion) error {
 	if err != nil {
 		return err
 	}
-	pendingTasks, err := db.AssignmentRetrieveForMinion(minion, true)
+	assignments, err := db.AssignmentRetrieveForMinion(minion, true)
 	if err != nil {
 		return err
 	}
 	// split by domain
-	pendingForDomain := make(map[uint32][]TaskAssignment)
-	for _, pending := range pendingTasks {
-		domainID := pending.Task.DomainID
-		if pendingForDomain[domainID] == nil {
-			pendingForDomain[domainID] = []TaskAssignment{pending}
+	assignmentsForDomain := make(map[uint32][]TaskAssignment)
+	for _, assignment := range assignments {
+
+		// Don't include the
+		if assignment.CompletedDate.Valid && !util.DateEqual(assignment.AssignedDate.Time, today) {
+			continue
+		}
+
+		domainID := assignment.Task.DomainID
+		if assignmentsForDomain[domainID] == nil {
+			assignmentsForDomain[domainID] = []TaskAssignment{assignment}
 		} else {
-			pendingForDomain[domainID] = append(pendingForDomain[domainID], pending)
+			assignmentsForDomain[domainID] = append(assignmentsForDomain[domainID], assignment)
 		}
 	}
 
@@ -59,7 +65,7 @@ func Update(minion Minion) error {
 
 		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue
 		// laundry
-		available = filterTasks(available, pendingForDomain[domain.ID])
+		available = filterTasks(available, assignmentsForDomain[domain.ID])
 
 		if len(available) == 0 {
 			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
@@ -71,7 +77,7 @@ func Update(minion Minion) error {
 			available[i], available[j] = available[j], available[i]
 		})
 
-		if len(pendingForDomain[domain.ID]) == 0 {
+		if len(assignmentsForDomain[domain.ID]) == 0 {
 			// this minion was either added to this Domain, or the Domain is new today or it was reset
 			tasksToAssign = append(tasksToAssign, NewTaskAssignment(available[0], minion, today))
 			available = available[1:]
@@ -79,7 +85,7 @@ func Update(minion Minion) error {
 		}
 
 		// Fill any gaps including today with tasks
-		additionalTasks, err := fillGapsWithTasks(minion, pendingForDomain[domain.ID], available, today)
+		additionalTasks, err := fillGapsWithTasks(minion, assignmentsForDomain[domain.ID], available, today)
 		if err != nil {
 			return err
 		}
@@ -233,35 +239,6 @@ func findOldestAssignmentTime(assignments []TaskAssignment) (time.Time, error) {
 		}
 	}
 	return oldest, nil
-}
-
-// /*
-// Split tasks in ones that are assigned to the minion, ones assigned to other people and unassigned (available) ones
-// */
-// func splitTasks(tasks []Task, minion Minion) ([]Task, []Task, []Task) {
-//
-// 	var assigned, available, other []Task
-//
-// 	for _, task := range tasks {
-// 		// Note: It might be worth treating any db ID as int64 (despite them bein all unusigned)
-// 		if task.AssignedMinionID.Valid {
-// 			if task.AssignedMinionID.Int64 == int64(minion.ID) {
-// 				assigned = append(assigned, task)
-// 			} else {
-// 				other = append(other, task)
-// 			}
-// 		} else {
-// 			available = append(available, task)
-// 		}
-// 	}
-//
-// 	return assigned, available, other
-// }
-
-func newTaskForMinion(domain Domain, minion Minion, date time.Time) (Task, error) {
-	var result Task
-
-	return result, nil
 }
 
 // fill the interval [d1, d2] of dates
