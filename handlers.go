@@ -394,7 +394,8 @@ func domainEditHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
 		"minion": minion,
 		"domain": domain,
-		"tasks":  tasks,
+		"daily":  TaskFilter(tasks, func(t Task) bool { return !t.Weekly }),
+		"weekly": TaskFilter(tasks, func(t Task) bool { return t.Weekly }),
 	})
 
 }

@@ -66,7 +66,7 @@ func Update(minion Minion) error {
 		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue
 		// laundry
 		available = filterTasks(available, assignmentsForDomain[domain.ID])
-
+		log.Printf("Tasks available %d\n", len(available))
 		if len(available) == 0 {
 			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
 			continue // it's nicer to continue than to have another block indented if we used an else

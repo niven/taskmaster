@@ -41,3 +41,15 @@ func NewTaskAssignment(task Task, minion Minion, time time.Time) TaskAssignment 
 
 	return result
 }
+
+func TaskFilter(tasks []Task, condition func(t Task) bool) []Task {
+
+	var result []Task
+	for _, t := range tasks {
+		if condition(t) == true {
+			result = append(result, t)
+		}
+	}
+
+	return result
+}
