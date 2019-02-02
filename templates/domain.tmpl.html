@@ -6,13 +6,12 @@
 {{ template "settings.tmpl.html" }}
 
 <div id="main">
-<h1>Editing {{ .domain.Name }}</h1>
 
-
-<h2>Tasks</h2>
-<div>
+<div class="deck">
+<h1>Tasks for {{ .domain.Name }}</h2>
+	
 {{if or (not .daily) (not .weekly) }} 
-This Deck doesn't have any chores
+<p>This Deck doesn't have any chores</p>
 {{else}}
 
 <form method="post" action="/task/update">
@@ -22,16 +21,16 @@ This Deck doesn't have any chores
 		<legend>Daily</legend>
 		<ol>
 		{{range .daily }}
-			<li>{{ .Name }} x<input type="number" name="{{ .ID }}" value="{{ .Count }}" min="0" max="999"></li>
+			<li><label for="{{ .ID }}">{{ .Name }}</label> x<input type="number" name="{{ .ID }}" id="{{ .ID }}" value="{{ .Count }}" min="0" max="999"></li>
 		{{end}}
 		</ol>
 	</fieldset>
 
 	<fieldset>
 		<legend>Weekly</legend>
-			<ol>
+		<ol>
 			{{range .weekly }}
-				<li>{{ .Name }} x<input type="number" name="{{ .ID }}" value="{{ .Count }}" min="0" max="999"></li>
+			<li><label for="{{ .ID }}">{{ .Name }}</label> x<input type="number" name="{{ .ID }}" id="{{ .ID }}" value="{{ .Count }}" min="0" max="999"></li>
 			{{end}}
 			</ol>
 	</fieldset>
@@ -43,12 +42,12 @@ This Deck doesn't have any chores
 
 <hr>
 
-<div>
+<div id="add_task">
 	<form method="post" action="/task/new">
 	<fieldset>
 		<legend>New Task</legend>
 		<input type="hidden" name="domain_id" value="{{ .domain.ID }}">
-		Name: <input type="text" name="name" size="20" maxlengt="200">
+		<input type="text" name="name" size="20" maxlengt="200">
 		x<input type="number" name="count" value="1" required="true">
 		Weekly: <input type="checkbox" name="weekly" value="true">
 		<input type="submit" value="Add">

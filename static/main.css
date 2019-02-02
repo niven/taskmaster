@@ -41,11 +41,60 @@ h1 {
 	padding: 1ex 0;
 }
 
-li {
+/* editing or displaying a list of tasks as a deck */
+
+div.deck, div#add_task {
+	padding: 1%;
+	text-align: center;
+}
+
+div.deck ol {
+	padding: 2% 5%;
+}
+
+div.deck ol li {
+	list-style-type: none;
+	text-align: left;
+}
+
+div.deck label {
+	display: inline-block;
+   width: 50%;
+   margin-right: 0.5em;
+   text-align: right;
+}
+
+div.deck input[type="submit"] {
+	margin: 0 auto;
+}
+
+div#add_task fieldset {
+	padding: 1em;
+}
+
+fieldset {
+	border: 1px solid green;
+	margin: 1%;
+}
+
+legend {
+	margin: 0 auto;
+	padding: 0 0.5em;
+	font-weight: bold;
+}
+
+
+
+hr {
+	margin: 1em 0;
+}
+
+li.task_assignment {
 	list-style-type: none;
 	text-align: center;
 }
-li:hover {
+
+li.task_assignment:hover {
 	background-color: deepskyblue;
 	cursor: pointer;
 }
@@ -66,7 +115,7 @@ button {
 }
 
 input[type=number]{
-/*    width: 2.5em;*/
+    width: 2.5em;
 } 
 
 #settings {
