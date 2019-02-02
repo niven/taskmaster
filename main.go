@@ -9,27 +9,17 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
-
 	"github.com/niven/taskmaster/config"
 )
 
 func init() {
-	log.SetFlags(log.Ldate | log.Ltime | log.LUTC | log.Lshortfile)
 
-	message.SetString(language.AmericanEnglish, "%s went to %s.", "%s is in %s.")
+	log.SetFlags(log.Ldate | log.Ltime | log.LUTC | log.Lshortfile)
 }
 
 var store = cookie.NewStore([]byte("secret"))
 
 func setupRouting(router *gin.Engine) {
-
-	p := message.NewPrinter(language.BritishEnglish)
-	p.Printf("There are %v flowers in our garden.\n", 1500)
-
-	p = message.NewPrinter(language.AmericanEnglish)
-	p.Printf("%s went to %s.", "Peter", "England")
 
 	router.Static("/static", "static")
 	router.Static("/favicon.ico", "static/favicon.ico")
