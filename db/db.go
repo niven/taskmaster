@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 
 	// have to import with an underbar alias since we need the init() to run
@@ -160,7 +161,7 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 
 	var result []Task
 
-	rows, err := db.Query("SELECT t.id, domain_id, name, weekly, description, count - COUNT(ta.task_id) FROM tasks t LEFT JOIN task_assignments ta ON t.id = ta.task_id WHERE domain_id = $1 GROUP BY t.id", domain.ID)
+	rows, err := db.Query("SELECT t.id, t.domain_id, t.name, t.weekly, t.description, t.count - ta.used AS available FROM tasks t LEFT JOIN (SELECT task_id, COUNT(*) AS used FROM task_assignments WHERE status != 'done_and_available' GROUP BY task_id) ta ON ta.task_id = t.id WHERE domain_id = $1", domain.ID)
 	if err != nil {
 		log.Printf("Error reading tasks: %q\n", err)
 		return result, err
@@ -169,11 +170,16 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 	defer rows.Close()
 	for rows.Next() {
 		var t Task
+		// results of math ops in postgres end up as int64 columns
 		var taskCount int64
 
 		if err := rows.Scan(&t.ID, &t.DomainID, &t.Name, &t.Weekly, &t.Description, &taskCount); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
+		}
+		if taskCount < 0 {
+			log.Printf("Available count below 0 (%d) for domain %d\n", taskCount, domain.ID)
+			return result, errors.New("DB state fail")
 		}
 		t.Count = uint32(taskCount)
 		result = append(result, t)
