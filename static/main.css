@@ -15,13 +15,13 @@ body {
 		repeating-linear-gradient(45deg,
 			transparent,
 			transparent 32px,
-			rgba(0,128,0, 0.5) 32px,
-			rgba(0,128,0, 0.5) 64px),
+			rgba(0, 128, 0, 0.5) 32px,
+			rgba(0, 128, 0, 0.5) 64px),
 	 	repeating-linear-gradient(-45deg,
 			transparent,
 			transparent 32px,
-			rgba(0,128,0, 0.5) 32px,
-			rgba(0,128,0, 0.5) 64px);		 
+			rgba(0, 128, 0, 0.5) 32px,
+			rgba(0, 128, 0, 0.5) 64px);		 
 
 	background-color: white;
 	height: 80%;
@@ -31,6 +31,10 @@ body {
 ul {
 /*	border: solid thin black;*/
 	padding-bottom: 1ex;
+}
+
+li {
+	list-style-type: none;
 }
 div {
 /*	border: solid thin red;*/
@@ -73,7 +77,7 @@ div#add_task fieldset {
 }
 
 fieldset {
-	border: 1px solid green;
+	border: 1px solid rgb(0, 128, 0);
 	margin: 1%;
 }
 
@@ -90,7 +94,6 @@ hr {
 }
 
 li.task_assignment {
-	list-style-type: none;
 	text-align: center;
 }
 
@@ -133,7 +136,7 @@ input[type=number]{
 #main {
 	margin: 0 auto;
 	width: 80%;
-	background-color: mistyrose;
+	background-color: #189090;
 }
 
 #state, #debug {

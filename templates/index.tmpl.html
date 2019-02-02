@@ -7,9 +7,15 @@
 <div id="main">
 	<h1 id="current_day">{{ .today }}</h1>
 	<ul id="today">
+{{ if .pending }}		
+
 {{range .pending }}
 	<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
 {{end}}
+
+{{ else }}
+	<li>All done!</li>
+{{ end }}
 	</ul>
 	
 	<div id="late">
