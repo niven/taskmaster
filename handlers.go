@@ -181,7 +181,7 @@ func overviewHandler(c *gin.Context) {
 		"pending":   today,
 		"this_week": this_week,
 		"overdue":   overdue,
-		"today":     now.Format("Monday January 02"),
+		"today":     now.Format("Monday January 2"),
 	})
 
 }
