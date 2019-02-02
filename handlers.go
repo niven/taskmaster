@@ -13,7 +13,6 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/lib/pq"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -245,12 +244,6 @@ func taskDoneHandler(c *gin.Context) {
 		errorHandler(c, "Invalid task assignment ID", err)
 		return
 	}
-	var returnTask bool
-	if paramReturnTask == "true" {
-		returnTask = true
-	} else {
-		returnTask = false
-	}
 
 	assignment, err := db.AssignmentRetrieve(int64(taskAssignmentID))
 	if err != nil {
@@ -258,12 +251,13 @@ func taskDoneHandler(c *gin.Context) {
 		return
 	}
 
-	if returnTask {
-		db.AssignmentDelete(assignment)
+	if paramReturnTask == "true" {
+		assignment.Status = DoneAndAvailable
 	} else {
-		assignment.CompletedDate = pq.NullTime{Time: time.Now(), Valid: true}
-		db.AssignmentUpdate(assignment)
+		assignment.Status = DoneAndStashed
 	}
+
+	db.AssignmentUpdate(assignment)
 
 	c.JSON(http.StatusOK, nil)
 }

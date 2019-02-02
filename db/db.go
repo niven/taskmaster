@@ -225,8 +225,8 @@ func AssignmentInsert(assignment TaskAssignment) error {
 func AssignmentUpdate(assignment TaskAssignment) error {
 
 	strDateAssigned := util.StrDateFromTime(assignment.AssignedDate.Time)
-	strDateCompleted := util.StrDateFromTime(assignment.CompletedDate.Time)
-	_, err := db.Exec("UPDATE task_assignments SET assigned_on = $1, completed_on = $2 WHERE id = $3", strDateAssigned, strDateCompleted, assignment.ID)
+
+	_, err := db.Exec("UPDATE task_assignments SET assigned_on = $1, status = $2 WHERE id = $3", strDateAssigned, assignment.Status, assignment.ID)
 
 	if err != nil {
 		log.Printf("Error updating assignment: %q", err)
@@ -250,9 +250,9 @@ func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
 
 	var result TaskAssignment
 
-	row := db.QueryRow("SELECT id, task_id, assigned_on, completed_on, CURRENT_DATE - assigned_on AS days_old FROM task_assignments WHERE id = $1", taskAssignmentID)
+	row := db.QueryRow("SELECT id, task_id, assigned_on, status, CURRENT_DATE - assigned_on AS days_old FROM task_assignments WHERE id = $1", taskAssignmentID)
 
-	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.CompletedDate, &result.AgeInDays); err != nil {
+	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.Status, &result.AgeInDays); err != nil {
 		log.Printf("Error scanning assignment: %q", err)
 		return result, err
 	}
@@ -265,9 +265,9 @@ func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAs
 
 	var result []TaskAssignment
 
-	sql := "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE completed_on IS NULL AND ta.minion_id = $1"
+	sql := "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, ta.status, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE status = 'pending' AND ta.minion_id = $1"
 	if includeCompleted {
-		sql = "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE ta.minion_id = $1"
+		sql = "SELECT ta.id, task_id, assigned_on, CURRENT_DATE - assigned_on AS days_old, ta.status, t.domain_id, t.name, t.weekly, t.description FROM task_assignments AS ta LEFT JOIN tasks AS t ON ta.task_id = t.id WHERE ta.minion_id = $1"
 	}
 
 	rows, err := db.Query(sql, minion.ID)
@@ -280,7 +280,7 @@ func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAs
 	for rows.Next() {
 		var ta TaskAssignment
 
-		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.AgeInDays, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
+		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.AgeInDays, &ta.Status, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
 			return result, err
 		}

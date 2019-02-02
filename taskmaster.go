@@ -36,11 +36,6 @@ func Update(minion Minion) error {
 	assignmentsForDomain := make(map[uint32][]TaskAssignment)
 	for _, assignment := range assignments {
 
-		// Don't include the
-		if assignment.CompletedDate.Valid && !util.DateEqual(assignment.AssignedDate.Time, today) {
-			continue
-		}
-
 		domainID := assignment.Task.DomainID
 		if assignmentsForDomain[domainID] == nil {
 			assignmentsForDomain[domainID] = []TaskAssignment{assignment}

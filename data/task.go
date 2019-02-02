@@ -7,6 +7,14 @@ import (
 	"github.com/lib/pq"
 )
 
+type AssignmentStatus string
+
+const (
+	Pending          AssignmentStatus = "pending"
+	DoneAndAvailable AssignmentStatus = "done_and_available"
+	DoneAndStashed   AssignmentStatus = "done_and_stashed"
+)
+
 // Task is a chore you do
 type Task struct {
 	ID          uint32
@@ -23,12 +31,12 @@ var NoTask = Task{
 }
 
 type TaskAssignment struct {
-	ID            uint32
-	Task          Task
-	MinionID      sql.NullInt64
-	AssignedDate  pq.NullTime
-	AgeInDays     uint32
-	CompletedDate pq.NullTime
+	ID           uint32
+	Task         Task
+	MinionID     sql.NullInt64
+	AssignedDate pq.NullTime
+	AgeInDays    uint32
+	Status       AssignmentStatus
 }
 
 func NewTaskAssignment(task Task, minion Minion, time time.Time) TaskAssignment {

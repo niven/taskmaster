@@ -139,7 +139,8 @@ DROP TABLE IF EXISTS domains CASCADE; CREATE TABLE IF NOT EXISTS domains (id SER
 
 DROP TABLE IF EXISTS tasks CASCADE; CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, domain_id INTEGER REFERENCES domains(id), name VARCHAR(255) NOT NULL, weekly BOOLEAN DEFAULT false, description TEXT, count INTEGER NOT NULL DEFAULT 1); \d+ tasks
 
-DROP TABLE IF EXISTS task_assignments; CREATE TABLE IF NOT EXISTS task_assignments (id SERIAL PRIMARY KEY, task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL, completed_on DATE); \d+ task_assignments
+DROP TYPE IF EXISTS enum_status CASCADE; CREATE TYPE enum_status AS ENUM ('pending', 'done_and_stashed', 'done_and_available');
+DROP TABLE IF EXISTS task_assignments; CREATE TABLE IF NOT EXISTS task_assignments (id SERIAL PRIMARY KEY, task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL, status enum_status default 'pending'); \d+ task_assignments
 
 ##### System data
 
