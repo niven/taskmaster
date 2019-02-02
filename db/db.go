@@ -161,7 +161,7 @@ func GetAvailableTasksForDomain(domain Domain) ([]Task, error) {
 
 	var result []Task
 
-	rows, err := db.Query("SELECT t.id, t.domain_id, t.name, t.weekly, t.description, t.count - ta.used AS available FROM tasks t LEFT JOIN (SELECT task_id, COUNT(*) AS used FROM task_assignments WHERE status != 'done_and_available' GROUP BY task_id) ta ON ta.task_id = t.id WHERE domain_id = $1", domain.ID)
+	rows, err := db.Query("SELECT t.id, t.domain_id, t.name, t.weekly, t.description, CASE WHEN ta.used IS NULL THEN t.count ELSE t.count - ta.used END AS available FROM tasks t LEFT JOIN (SELECT task_id, COUNT(*) AS used FROM task_assignments WHERE status != 'done_and_available' GROUP BY task_id) ta ON ta.task_id = t.id WHERE domain_id = $1", domain.ID)
 	if err != nil {
 		log.Printf("Error reading tasks: %q\n", err)
 		return result, err
