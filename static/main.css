@@ -111,13 +111,27 @@ a:visited {
 	color: black;
 }
 
-button {
+button, ol.domains li {
 	background: oldlace;
 	color: black;
 
    cursor: pointer;	
-	font-weight: bolder;
+	
+   margin: 2ex auto;
+	
+	font-weight: bold;
+	border-color: silver;
+	border-width: 2px;
+	border-style: outset;
+	border-radius: 0.2em;
+	transform: skewX(-20deg);
 }
+
+ol.domains li {
+	width: 80%;
+	padding: 0.2em;
+}
+
 
 input[type=number]{
     width: 2.5em;
@@ -128,10 +142,11 @@ input[type=number]{
 	position: absolute;
 	top: 0;
 	left: 0;
-	background-color: rgba(255, 255, 255, 0.95);
+	background-color: rgba(148, 238, 148, 0.95);
 }
 
 #controls {
+	padding: 1em;
 }
 
 
@@ -239,13 +254,10 @@ ul#today li {
   /* don't need to go crazy with z-index here, just sits over .modal-guts */
   z-index: 1;
     
-  border-radius: 0.2em;
-  
   width: 40%;
   min-height: 3em;
   
   flex: 0 0 auto;
-  transform: skewX(-20deg);
   
   margin: 2ex auto;
 }

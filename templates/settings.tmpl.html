@@ -1,12 +1,12 @@
 	<div id="settings">
 		<a href="#" id="gear" onclick="document.getElementById('controls').classList.toggle('closed')">&#9881;</a>
 		
-		<div class="closed" id="controls">
+		<div class="closed modal" id="controls">
 		Logged in as {{ .minion.Name }}<br>
 			<small>({{ .minion.Email }})</small>
 			<a href="/setup">Setup</a>
 			<h1>My Domains</h1>
-			<ol>
+			<ol class="domains">
 			{{range .domains }}
 				<li> <a href="/domain/edit/{{ .ID }}">{{ .Name }}</a></li>
 			{{end}}
