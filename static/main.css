@@ -23,7 +23,7 @@ body {
 			rgba(0, 128, 0, 0.5) 32px,
 			rgba(0, 128, 0, 0.5) 64px);		 
 
-	background-color: white;
+	background-color: mintcream;
 	height: 80%;
 	padding: 5%;
 }
@@ -112,9 +112,11 @@ a:visited {
 }
 
 button {
-   background: black;
-   color: white;
+	background: oldlace;
+	color: black;
+
    cursor: pointer;	
+	font-weight: bolder;
 }
 
 input[type=number]{
@@ -136,7 +138,8 @@ input[type=number]{
 #main {
 	margin: 0 auto;
 	width: 80%;
-	background-color: #189090;
+	background-color: bisque;
+	box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.3);
 }
 
 #state, #debug {
@@ -161,7 +164,7 @@ input[type=number]{
 }
 
 #overdue {
-	background-color: lightsalmon;
+	background-color: #F08328;
 }
 
 ul#today {
@@ -206,9 +209,7 @@ ul#today li {
 	width: 100%;
 	height: 100%;
 
-	display: flex;
-	flex-direction: column;
-	justify-content: space-evenly;
+	text-align: center;
 
 	/* let it scroll */
 	overflow: auto;
@@ -238,15 +239,15 @@ ul#today li {
   /* don't need to go crazy with z-index here, just sits over .modal-guts */
   z-index: 1;
     
-  border-radius: 2em;
+  border-radius: 0.2em;
   
   width: 40%;
   min-height: 3em;
   
   flex: 0 0 auto;
+  transform: skewX(-20deg);
   
-  
-  margin: 0 auto;
+  margin: 2ex auto;
 }
 
 .closed {
