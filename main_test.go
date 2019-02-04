@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	. "github.com/niven/taskmaster/handlers"
 )
 
 // Helper function to process a request and test its response
@@ -39,7 +40,7 @@ func getRouter(withTemplates bool) *gin.Engine {
 func TestShowIndexPageUnauthenticated(t *testing.T) {
 	r := getRouter(true)
 	r.Use(sessions.Sessions("tm", store))
-	r.GET("/", indexHandler)
+	r.GET("/", IndexHandler)
 
 	// Create a request to send to the above route
 	req, _ := http.NewRequest("GET", "/", nil)

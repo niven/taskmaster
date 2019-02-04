@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"crypto/rand"
@@ -20,6 +20,7 @@ import (
 	"github.com/niven/taskmaster/config"
 	. "github.com/niven/taskmaster/data"
 	"github.com/niven/taskmaster/db"
+	"github.com/niven/taskmaster/logic"
 )
 
 var conf *oauth2.Config
@@ -51,7 +52,7 @@ func AuthorizeRequest() gin.HandlerFunc {
 		if isAuthorized(c) {
 			c.Next()
 		} else {
-			welcomeHandler(c)
+			WelcomeHandler(c)
 		}
 	}
 }
@@ -79,25 +80,25 @@ type GoogleUser struct {
 	Gender        string `json:"gender"`
 }
 
-func authHandler(c *gin.Context) {
+func AuthHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	retrievedState := session.Get("state")
 	if retrievedState != c.Query("state") {
-		errorHandler(c, fmt.Sprintf("Invalid session state: %s !+ %s", retrievedState, c.Query("state")), nil)
+		ErrorHandler(c, fmt.Sprintf("Invalid session state: %s !+ %s", retrievedState, c.Query("state")), nil)
 		return
 	}
 
 	tok, err := conf.Exchange(oauth2.NoContext, c.Query("code"))
 	if err != nil {
-		errorHandler(c, "", err)
+		ErrorHandler(c, "", err)
 		return
 	}
 
 	client := conf.Client(oauth2.NoContext, tok)
 	userinfo, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
-		errorHandler(c, "", err)
+		ErrorHandler(c, "", err)
 		return
 	}
 	defer userinfo.Body.Close()
@@ -115,7 +116,7 @@ func authHandler(c *gin.Context) {
 	session.Set("user-name", user.Name)
 	err = session.Save()
 	if err != nil {
-		errorHandler(c, "Error while saving session. Please try again.", err)
+		ErrorHandler(c, "Error while saving session. Please try again.", err)
 		return
 	}
 
@@ -123,15 +124,15 @@ func authHandler(c *gin.Context) {
 
 }
 
-func indexHandler(c *gin.Context) {
+func IndexHandler(c *gin.Context) {
 	if isAuthorized(c) {
-		overviewHandler(c)
+		OverviewHandler(c)
 	} else {
-		welcomeHandler(c)
+		WelcomeHandler(c)
 	}
 }
 
-func overviewHandler(c *gin.Context) {
+func OverviewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
@@ -146,7 +147,7 @@ func overviewHandler(c *gin.Context) {
 		}
 		err := db.CreateMinion(userEmail, userName.(string))
 		if err != nil {
-			errorHandler(c, "", err)
+			ErrorHandler(c, "", err)
 			return
 		}
 		db.LoadMinion(userEmail, &minion)
@@ -154,22 +155,22 @@ func overviewHandler(c *gin.Context) {
 
 	domains := db.GetDomainsForMinion(minion)
 
-	err := Update(minion)
+	err := logic.Update(minion)
 	if err != nil {
-		errorHandler(c, "", err)
+		ErrorHandler(c, "", err)
 		return
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
 	pendingTaskAssignments, err := db.AssignmentRetrieveForMinion(minion, false)
 	if err != nil {
-		errorHandler(c, "", err)
+		ErrorHandler(c, "", err)
 		return
 	}
 
 	// split in Today, This Week, Overdue
 	now := time.Now()
-	today, this_week, overdue := SplitTaskAssignments(pendingTaskAssignments, now)
+	today, this_week, overdue := logic.SplitTaskAssignments(pendingTaskAssignments, now)
 
 	c.HTML(http.StatusOK, "index.tmpl.html", gin.H{
 		"minion":    minion,
@@ -182,7 +183,7 @@ func overviewHandler(c *gin.Context) {
 
 }
 
-func welcomeHandler(c *gin.Context) {
+func WelcomeHandler(c *gin.Context) {
 
 	state = randToken()
 	session := sessions.Default(c)
@@ -194,14 +195,14 @@ func welcomeHandler(c *gin.Context) {
 	})
 }
 
-func setupHandler(c *gin.Context) {
+func SetupHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		errorHandler(c, "User authenticated but not found", nil)
+		ErrorHandler(c, "User authenticated but not found", nil)
 		return
 	}
 
@@ -213,33 +214,33 @@ func setupHandler(c *gin.Context) {
 	})
 }
 
-func taskDoneHandler(c *gin.Context) {
+func TaskDoneHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		errorHandler(c, "User authenticated but not found", nil)
+		ErrorHandler(c, "User authenticated but not found", nil)
 		return
 	}
 
 	paramTaskAssignmentID, presentTaskAssignmentID := c.GetPostForm("task_assignment_id")
 	paramReturnTask, presentReturnTask := c.GetPostForm("return_task")
 	if !presentTaskAssignmentID || !presentReturnTask {
-		errorHandler(c, "Missing parameters", nil)
+		ErrorHandler(c, "Missing parameters", nil)
 		return
 	}
 
 	taskAssignmentID, err := strconv.Atoi(paramTaskAssignmentID)
 	if err != nil {
-		errorHandler(c, "Invalid task assignment ID", err)
+		ErrorHandler(c, "Invalid task assignment ID", err)
 		return
 	}
 
 	assignment, err := db.AssignmentRetrieve(int64(taskAssignmentID))
 	if err != nil {
-		errorHandler(c, "No such assignment", err)
+		ErrorHandler(c, "No such assignment", err)
 		return
 	}
 
@@ -254,37 +255,37 @@ func taskDoneHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func taskNewHandler(c *gin.Context) {
+func TaskNewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		errorHandler(c, "User authenticated but not found", nil)
+		ErrorHandler(c, "User authenticated but not found", nil)
 		return
 	}
 
 	paramCount, presentCount := c.GetPostForm("count")
 	paramDomainID, presentDomainID := c.GetPostForm("domain_id")
 	if !presentCount || !presentDomainID {
-		errorHandler(c, "Missing parameters", nil)
+		ErrorHandler(c, "Missing parameters", nil)
 		return
 	}
 
 	count, err := strconv.Atoi(paramCount)
 	if err != nil {
-		errorHandler(c, "Invalid count", err)
+		ErrorHandler(c, "Invalid count", err)
 		return
 	}
 	domainID, err := strconv.Atoi(paramDomainID)
 	if err != nil {
-		errorHandler(c, fmt.Sprintf("Invalid Domain ID: '%s'", paramDomainID), err)
+		ErrorHandler(c, fmt.Sprintf("Invalid Domain ID: '%s'", paramDomainID), err)
 		return
 	}
 	domain, err := db.GetDomainByID(uint32(domainID))
 	if err != nil || domain.Owner != minion.ID {
-		errorHandler(c, "Domain not found", err)
+		ErrorHandler(c, "Domain not found", err)
 		return
 	}
 
@@ -305,13 +306,13 @@ func taskNewHandler(c *gin.Context) {
 
 	err = db.CreateNewTask(task)
 	if err != nil {
-		errorHandler(c, "Error creating new task", err)
+		ErrorHandler(c, "Error creating new task", err)
 		return
 	}
 
 	tasks, err := db.GetTasksForDomain(domain)
 	if err != nil {
-		errorHandler(c, "Domain not found", err)
+		ErrorHandler(c, "Domain not found", err)
 		return
 	}
 
@@ -322,24 +323,24 @@ func taskNewHandler(c *gin.Context) {
 	})
 }
 
-func domainNewHandler(c *gin.Context) {
+func DomainNewHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		errorHandler(c, "User authenticated but not found", nil)
+		ErrorHandler(c, "User authenticated but not found", nil)
 		return
 	}
 
 	domainName := c.DefaultPostForm("name", "Unnamed Deck")
 	db.CreateNewDomain(minion, domainName)
 
-	setupHandler(c)
+	SetupHandler(c)
 }
 
-func errorHandler(c *gin.Context, message string, err error) {
+func ErrorHandler(c *gin.Context, message string, err error) {
 
 	c.HTML(http.StatusBadRequest, "error.tmpl.html", gin.H{
 		"message": message,
@@ -348,32 +349,32 @@ func errorHandler(c *gin.Context, message string, err error) {
 
 }
 
-func domainEditHandler(c *gin.Context) {
+func DomainEditHandler(c *gin.Context) {
 
 	session := sessions.Default(c)
 	userEmail := session.Get("user-id").(string)
 	var minion Minion
 	found := db.LoadMinion(userEmail, &minion)
 	if !found {
-		errorHandler(c, "User authenticated but not found", nil)
+		ErrorHandler(c, "User authenticated but not found", nil)
 	}
 
 	domainID, err := strconv.Atoi(c.Param("domain_id"))
 	if err != nil || domainID < 0 {
-		errorHandler(c, "Invalid domain ID", err)
+		ErrorHandler(c, "Invalid domain ID", err)
 		return
 	}
 
 	domain, err := db.GetDomainByID(uint32(domainID))
 	if err != nil || domain.Owner != minion.ID {
-		errorHandler(c, "Domain not found", err)
+		ErrorHandler(c, "Domain not found", err)
 		return
 	}
 
 	tasks, err := db.GetTasksForDomain(domain)
 	if err != nil {
 		// return not found to avoid leaking domain IDs. Not that it matters here, but general principle
-		errorHandler(c, "Domain not found", err)
+		ErrorHandler(c, "Domain not found", err)
 		return
 	}
 	// setup menu needs the list

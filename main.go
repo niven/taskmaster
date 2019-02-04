@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/niven/taskmaster/config"
+	. "github.com/niven/taskmaster/handlers"
 )
 
 func init() {
@@ -24,30 +25,30 @@ func setupRouting(router *gin.Engine) {
 	router.Static("/static", "static")
 	router.Static("/favicon.ico", "static/favicon.ico")
 
-	router.GET("/", indexHandler)
+	router.GET("/", IndexHandler)
 
-	router.GET("/welcome", welcomeHandler)
-	router.GET("/auth", authHandler)
+	router.GET("/welcome", WelcomeHandler)
+	router.GET("/auth", AuthHandler)
 
 	authorized := router.Group("/")
 	authorized.Use(AuthorizeRequest())
 	{
-		authorized.GET("/today", overviewHandler)
-		authorized.GET("/setup", setupHandler)
+		authorized.GET("/today", OverviewHandler)
+		authorized.GET("/setup", SetupHandler)
 	}
 
 	domain := router.Group("/domain")
 	domain.Use(AuthorizeRequest())
 	{
-		domain.POST("/new", domainNewHandler)
-		domain.GET("/edit/:domain_id", domainEditHandler)
+		domain.POST("/new", DomainNewHandler)
+		domain.GET("/edit/:domain_id", DomainEditHandler)
 	}
 
 	task := router.Group("/task")
 	task.Use(AuthorizeRequest())
 	{
-		task.POST("/new", taskNewHandler)
-		task.POST("/done", taskDoneHandler)
+		task.POST("/new", TaskNewHandler)
+		task.POST("/done", TaskDoneHandler)
 	}
 
 }
