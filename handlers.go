@@ -384,12 +384,19 @@ func domainEditHandler(c *gin.Context) {
 		errorHandler(c, "Domain not found", err)
 		return
 	}
+	// setup menu needs the list
+	domains, err := db.GetDomainsForMinion(minion)
+	if err != nil {
+		errorHandler(c, "", err)
+		return
+	}
 
 	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
-		"minion": minion,
-		"domain": domain,
-		"daily":  TaskFilter(tasks, func(t Task) bool { return !t.Weekly }),
-		"weekly": TaskFilter(tasks, func(t Task) bool { return t.Weekly }),
+		"minion":  minion,
+		"domain":  domain,
+		"domains": domains,
+		"daily":   TaskFilter(tasks, func(t Task) bool { return !t.Weekly }),
+		"weekly":  TaskFilter(tasks, func(t Task) bool { return t.Weekly }),
 	})
 
 }
