@@ -10,7 +10,39 @@ import (
 	. "github.com/niven/taskmaster/util"
 )
 
-func TestAssignTasksForDomainNothingAassigned(t *testing.T) {
+func TestAssignTasksForDomainSimple(t *testing.T) {
+
+	minion := Minion{ID: 1}
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 2)
+
+	available := []Task{
+		Task{ID: 123},
+	}
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			Task:         Task{ID: 234},
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+		TaskAssignment{
+			Task:         Task{ID: 345},
+			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 2)},
+		},
+	}
+
+	additional, err := assignTasksForDomain(minion, available, assigned, end)
+	if err != nil {
+		t.Fail()
+	}
+	if len(additional) != 1 {
+		t.Fail()
+	}
+	if additional[0].Task.ID != 123 {
+		t.Fail()
+	}
+}
+
+func TestAssignTasksForDomainNothingAssigned(t *testing.T) {
 
 	minion := Minion{ID: 1}
 	available := []Task{
