@@ -26,7 +26,7 @@ func TestAssignTasksForDomainSimple(t *testing.T) {
 		},
 		TaskAssignment{
 			Task:         Task{ID: 345},
-			AssignedDate: pq.NullTime{Valid: true, Time: start.AddDate(0, 0, 2)},
+			AssignedDate: pq.NullTime{Valid: true, Time: end},
 		},
 	}
 

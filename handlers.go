@@ -152,13 +152,9 @@ func overviewHandler(c *gin.Context) {
 		db.LoadMinion(userEmail, &minion)
 	}
 
-	domains, err := db.GetDomainsForMinion(minion)
-	if err != nil {
-		errorHandler(c, "", err)
-		return
-	}
+	domains := db.GetDomainsForMinion(minion)
 
-	err = Update(minion)
+	err := Update(minion)
 	if err != nil {
 		errorHandler(c, "", err)
 		return
@@ -209,11 +205,7 @@ func setupHandler(c *gin.Context) {
 		return
 	}
 
-	domains, err := db.GetDomainsForMinion(minion)
-	if err != nil {
-		errorHandler(c, "User authenticated but not found", nil)
-		return
-	}
+	domains := db.GetDomainsForMinion(minion)
 
 	c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
 		"minion":  minion,
@@ -385,11 +377,7 @@ func domainEditHandler(c *gin.Context) {
 		return
 	}
 	// setup menu needs the list
-	domains, err := db.GetDomainsForMinion(minion)
-	if err != nil {
-		errorHandler(c, "", err)
-		return
-	}
+	domains := db.GetDomainsForMinion(minion)
 
 	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
 		"minion":  minion,

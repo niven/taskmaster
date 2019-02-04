@@ -90,12 +90,13 @@ func GetDomainByID(domainID uint32) (Domain, error) {
 	return result, nil
 }
 
-func GetDomainsForMinion(m Minion) ([]Domain, error) {
+func GetDomainsForMinion(m Minion) []Domain {
 
 	rows, err := db.Query("SELECT d.id, d.owner, d.name, d.last_reset_date, COUNT(t.id) AS task_count FROM domains d LEFT JOIN tasks t ON d.id = t.domain_id WHERE owner = $1 GROUP BY d.id", m.ID)
 
 	if err != nil {
-		return nil, err
+		log.Printf("Error inquery: %q", err)
+		return nil
 	}
 
 	var result []Domain
@@ -105,12 +106,12 @@ func GetDomainsForMinion(m Minion) ([]Domain, error) {
 
 		if err := rows.Scan(&d.ID, &d.Owner, &d.Name, &d.LastResetDate, &d.TaskCount); err != nil {
 			log.Printf("Error scanning domains: %q", err)
-			return nil, err
+			return nil
 		}
 		result = append(result, d)
 	}
 
-	return result, nil
+	return result
 }
 
 func ReadAllMinions() ([]Minion, error) {

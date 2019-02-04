@@ -24,10 +24,8 @@ func Update(minion Minion) error {
 
 	today := time.Now()
 
-	domains, err := db.GetDomainsForMinion(minion)
-	if err != nil {
-		return err
-	}
+	domains := db.GetDomainsForMinion(minion)
+
 	assignments, err := db.AssignmentRetrieveForMinion(minion, true)
 	if err != nil {
 		return err
