@@ -78,41 +78,49 @@ func Update(minion Minion) error {
 func assignTasks(minion Minion, domains []Domain, availableForDomain map[uint32][]Task, assignmentsForDomain map[uint32][]TaskAssignment, upToIncluding time.Time) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
+
 	for _, domain := range domains {
 
 		available := availableForDomain[domain.ID]
+		assignments := assignmentsForDomain[domain.ID]
 
-		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue
-		// laundry
-		available = filterTasks(available, assignmentsForDomain[domain.ID])
-		log.Printf("Tasks available %d\n", len(available))
-		if len(available) == 0 {
-			result = append(result, TaskAssignment{Task: NoTask})
-			continue // it's nicer to continue than to have another block indented if we used an else
-		}
+		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue laundry
+		available = filterTasks(available, assignments)
 
-		// pick random tasks, not in order
-		rand.Shuffle(len(available), func(i, j int) {
-			available[i], available[j] = available[j], available[i]
-		})
-
-		if len(assignmentsForDomain[domain.ID]) == 0 {
-			// this minion was either added to this Domain, or the Domain is new today or it was reset
-			result = append(result, NewTaskAssignment(available[0], minion, upToIncluding))
-			available = available[1:]
-			continue
-		}
-
-		// Fill any gaps including today with tasks
-		additionalTasks, err := fillGapsWithTasks(minion, assignmentsForDomain[domain.ID], available, upToIncluding)
+		additional, err := assignTasksForDomain(minion, available, assignments, upToIncluding)
 		if err != nil {
-			return result, err
+			return nil, err
 		}
-		result = append(result, additionalTasks...) // ... is spread
-
+		result = append(result, additional...) // ... is spread
 	}
 
 	return result, nil
+}
+
+func assignTasksForDomain(minion Minion, available []Task, assignments []TaskAssignment, upToIncluding time.Time) ([]TaskAssignment, error) {
+
+	var result []TaskAssignment
+
+	log.Printf("Tasks available %d\n", len(available))
+	if len(available) == 0 {
+		return []TaskAssignment{TaskAssignment{Task: NoTask}}, nil
+	}
+
+	// pick random tasks, not in order
+	rand.Shuffle(len(available), func(i, j int) {
+		available[i], available[j] = available[j], available[i]
+	})
+
+	if len(assignments) == 0 {
+		// this minion was either added to this Domain, or the Domain is new today or it was reset
+		// result = append(result, NewTaskAssignment(available[0], minion, upToIncluding))
+		return []TaskAssignment{NewTaskAssignment(available[0], minion, upToIncluding)}, nil
+	}
+
+	// Fill any gaps including today with tasks
+	result, err := fillGapsWithTasks(minion, assignments, available, upToIncluding)
+	return result, err
+
 }
 
 // split pending assignments into 3 lists: those for the current date, overdue ones and weekly ones
