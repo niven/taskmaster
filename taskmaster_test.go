@@ -10,6 +10,26 @@ import (
 	. "github.com/niven/taskmaster/util"
 )
 
+func TestAssignTasksForDomainNothingAassigned(t *testing.T) {
+
+	minion := Minion{ID: 1}
+	available := []Task{
+		Task{ID: 123},
+	}
+	assigned := []TaskAssignment{}
+
+	additional, err := assignTasksForDomain(minion, available, assigned, time.Now())
+	if err != nil {
+		t.Fail()
+	}
+	if len(additional) != 1 {
+		t.Fail()
+	}
+	if additional[0].Task.ID != 123 {
+		t.Fail()
+	}
+}
+
 func TestAssignTasksForDomainNothingAvailable(t *testing.T) {
 
 	minion := Minion{ID: 1}
