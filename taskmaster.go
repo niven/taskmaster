@@ -44,7 +44,8 @@ func Update(minion Minion) error {
 		}
 	}
 
-	var tasksToAssign []TaskAssignment
+	availableForDomain := make(map[uint32][]Task)
+
 	for _, domain := range domains {
 		log.Printf("Updating %s\n", domain.Name)
 
@@ -57,13 +58,36 @@ func Update(minion Minion) error {
 		if err != nil {
 			return err
 		}
+		availableForDomain[domain.ID] = available
+	}
+
+	tasksToAssign, err := assignTasks(minion, domains, availableForDomain, assignmentsForDomain, today)
+	if err != nil {
+		return err
+	}
+
+	for _, t := range tasksToAssign {
+		if t.Task.ID != NoTask.ID {
+			db.AssignmentInsert(t)
+		}
+	}
+
+	return nil
+}
+
+func assignTasks(minion Minion, domains []Domain, availableForDomain map[uint32][]Task, assignmentsForDomain map[uint32][]TaskAssignment, upToIncluding time.Time) ([]TaskAssignment, error) {
+
+	var result []TaskAssignment
+	for _, domain := range domains {
+
+		available := availableForDomain[domain.ID]
 
 		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue
 		// laundry
 		available = filterTasks(available, assignmentsForDomain[domain.ID])
 		log.Printf("Tasks available %d\n", len(available))
 		if len(available) == 0 {
-			tasksToAssign = append(tasksToAssign, TaskAssignment{Task: NoTask})
+			result = append(result, TaskAssignment{Task: NoTask})
 			continue // it's nicer to continue than to have another block indented if we used an else
 		}
 
@@ -74,27 +98,21 @@ func Update(minion Minion) error {
 
 		if len(assignmentsForDomain[domain.ID]) == 0 {
 			// this minion was either added to this Domain, or the Domain is new today or it was reset
-			tasksToAssign = append(tasksToAssign, NewTaskAssignment(available[0], minion, today))
+			result = append(result, NewTaskAssignment(available[0], minion, upToIncluding))
 			available = available[1:]
 			continue
 		}
 
 		// Fill any gaps including today with tasks
-		additionalTasks, err := fillGapsWithTasks(minion, assignmentsForDomain[domain.ID], available, today)
+		additionalTasks, err := fillGapsWithTasks(minion, assignmentsForDomain[domain.ID], available, upToIncluding)
 		if err != nil {
-			return err
+			return result, err
 		}
-		tasksToAssign = append(tasksToAssign, additionalTasks...) // ... is spread
+		result = append(result, additionalTasks...) // ... is spread
 
 	}
 
-	for _, t := range tasksToAssign {
-		if t.Task.ID != NoTask.ID {
-			db.AssignmentInsert(t)
-		}
-	}
-
-	return nil
+	return result, nil
 }
 
 // split pending assignments into 3 lists: those for the current date, overdue ones and weekly ones
