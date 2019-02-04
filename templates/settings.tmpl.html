@@ -4,7 +4,10 @@
 		<div class="closed modal" id="controls">
 		Logged in as {{ .minion.Name }}<br>
 			<small>({{ .minion.Email }})</small>
-			<a href="/setup">Setup</a>
+			<p>
+				<a href="/today" style="display: inline-block">Today</a>
+				<a href="/setup" style="display: inline-block">Setup</a>
+			</p>
 			<h1>My Domains</h1>
 			<ol class="domains">
 			{{range .domains }}
