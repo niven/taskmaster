@@ -10,6 +10,23 @@ import (
 	. "github.com/niven/taskmaster/util"
 )
 
+func TestAssignTasksForDomainNothingAvailable(t *testing.T) {
+
+	minion := Minion{ID: 1}
+	var available []Task
+
+	additional, err := assignTasksForDomain(minion, available, nil, time.Now())
+	if err != nil {
+		t.Fail()
+	}
+	if len(additional) != 1 {
+		t.Fail()
+	}
+	if additional[0].Task.ID != NoTask.ID {
+		t.Fail()
+	}
+}
+
 func TestSplitTaskAssignments(t *testing.T) {
 
 	now := DateFromYYYYMMDD(2019, time.January, 29) // tuesday

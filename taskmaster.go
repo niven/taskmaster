@@ -101,7 +101,6 @@ func assignTasksForDomain(minion Minion, available []Task, assignments []TaskAss
 
 	var result []TaskAssignment
 
-	log.Printf("Tasks available %d\n", len(available))
 	if len(available) == 0 {
 		return []TaskAssignment{TaskAssignment{Task: NoTask}}, nil
 	}
