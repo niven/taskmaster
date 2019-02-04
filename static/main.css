@@ -39,6 +39,7 @@ li {
 div {
 /*	border: solid thin red;*/
 }
+
 h1 {
 	text-align: center;
 	font-variant: small-caps;
@@ -95,29 +96,27 @@ hr {
 
 li.task_assignment {
 	text-align: center;
-}
-
-li.task_assignment:hover {
-	background-color: deepskyblue;
-	cursor: pointer;
+	width: 80%;
+	margin: 0.5em auto;
+	padding: 0.2em 1em;
 }
 
 a {
 	text-decoration: none;
 	display: block;
+	padding: 0.2em 1em;
 	font-size: xx-large;
 }
-a:visited {
-	color: black;
+
+button {
+   margin: 2ex auto;
 }
 
-button, ol.domains li {
+button, a, input[type="submit"], li.task_assignment {
+   cursor: pointer;
 	background: oldlace;
 	color: black;
 
-   cursor: pointer;	
-	
-   margin: 2ex auto;
 	
 	font-weight: bold;
 	border-color: silver;
@@ -126,6 +125,11 @@ button, ol.domains li {
 	border-radius: 0.2em;
 	transform: skewX(-20deg);
 }
+
+button:hover, a:hover, input[type="submit"]:hover, li.task_assignment:hover {
+	background-color: deepskyblue;
+}
+
 
 ol.domains li {
 	width: 80%;
@@ -142,24 +146,23 @@ input[type=number]{
 	position: absolute;
 	top: 0;
 	left: 0;
-	background-color: rgba(148, 238, 148, 0.95);
+	width: 1em;
+	padding-left: 0.2em;
 }
 
 #controls {
 	padding: 1em;
 }
 
+a#gear {
+	padding: 0;
+}
 
 #main {
 	margin: 0 auto;
 	width: 80%;
-	background-color: bisque;
+	background-color: lightgreen;
 	box-shadow: 0 0 60px 10px rgba(0, 0, 0, 0.3);
-}
-
-#state, #debug {
-	border: solid thin maroon;
-	display: none;
 }
 
 
@@ -188,7 +191,7 @@ ul#today {
 }
 
 ul#today li {
-	font-size: 200%;
+	font-size: 150%;
 	text-align: center;
 }
 
