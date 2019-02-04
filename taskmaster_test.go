@@ -214,6 +214,28 @@ func TestFillGapsWithTasksNotEnough(t *testing.T) {
 	}
 }
 
+func TestFillGapsWithTooManyAssigned(t *testing.T) {
+
+	var minion Minion
+
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+		TaskAssignment{
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+	}
+
+	var available []Task
+	assigned, err := fillGapsWithTasks(minion, assigned, available, start)
+	if err == nil {
+		t.Fail()
+	}
+}
+
 func TestFillGapsWithTasksMulti(t *testing.T) {
 
 	var minion Minion
