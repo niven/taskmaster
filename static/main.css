@@ -187,13 +187,11 @@ a#gear {
 }
 
 ul#today {
-	width: 100%;
 	padding: 0;
 }
 
 ul#today li {
 	font-size: 150%;
-	text-align: center;
 }
 
 /************** Modal stuff down below ***********************/

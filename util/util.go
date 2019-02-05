@@ -11,7 +11,7 @@ func IsWeekendDay(day time.Weekday) bool {
 }
 
 func DateFromYYYYMMDD(yyyy int, mm time.Month, dd int) time.Time {
-	return time.Date(yyyy, time.January, dd, 0, 0, 0, 0, time.UTC)
+	return time.Date(yyyy, mm, dd, 0, 0, 0, 0, time.UTC)
 }
 
 func DateEqual(a, b time.Time) bool {
