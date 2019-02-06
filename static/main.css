@@ -40,7 +40,7 @@ div {
 /*	border: solid thin red;*/
 }
 
-h1 {
+h1, h2 {
 	text-align: center;
 	font-variant: small-caps;
 	padding: 1ex 0;
@@ -103,9 +103,8 @@ li.task_assignment {
 
 a {
 	text-decoration: none;
-	display: block;
+	display: inline-block;
 	padding: 0.2em 1em;
-	font-size: xx-large;
 }
 
 button {
@@ -130,12 +129,16 @@ button:hover, a:hover, input[type="submit"]:hover, li.task_assignment:hover {
 	background-color: deepskyblue;
 }
 
-
-ol.domains li {
-	width: 80%;
-	padding: 0.2em;
+ul.domains li {
+	padding: 0.5em 2em;
 }
 
+ul.domains a {
+	width: 65%;
+}
+ul.domains a.delete {
+	width: 4em;
+}
 
 input[type=number]{
     width: 2.5em;

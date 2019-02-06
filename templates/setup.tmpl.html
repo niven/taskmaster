@@ -8,26 +8,34 @@
 <div id="main">
 <h1>Setup</h1>
 
+<fieldset>
+<legend>My Domains</legend>
 
-<h2>My Domains</h2>
 {{if not .domains}} 
 You don't have any Decks set up!
 {{else}}
 
-<ol>
+<ul class="domains">
 {{range .domains }}
-	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }} ({{ .TaskCount }} tasks)</a></li>
+	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }} ({{ .TaskCount }} tasks)</a> <a href="/domain/delete/{{ .ID }}" class="delete">Delete</a></li>
 {{end}}
-</ol>
+	<li>
+		<form method="post" action="/domain/new">
+			<input type="text" name="name" size="20" maxlengt="200" style="width: 75%">
+			<input type="submit" value="Add New" style="padding: 0.2em 1em;">
+		</form>		
+	</li>
+</ul>
 
 {{end}}
 
-<div>
-	<form method="post" action="/domain/new">
-		<input type="text" name="name" size="20" maxlengt="200">
-		<input type="submit" value="Add New">
-	</form>
-</div>
+</fieldset>
+
+<fieldset>
+<legend>General</legend>
+
+</fieldset>
+<br>
 
 </div>
 
