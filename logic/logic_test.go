@@ -18,10 +18,10 @@ func TestAssignTasks(t *testing.T) {
 	}
 	availableForDomain := make(map[uint32][]Task)
 	availableForDomain[1] = []Task{Task{ID: 999}}
-	assignmentsForDomain := make(map[uint32][]TaskAssignment)
+	var assignments []TaskAssignment
 	upToIncluding := time.Now() // nothing is assigned, so no gap filling, so just 1 task per domain. The available one and the NoTask
 
-	assignments, err := assignTasks(Minion{ID: 1}, domains, availableForDomain, assignmentsForDomain, upToIncluding)
+	assignments, err := assignTasks(Minion{ID: 1}, domains, availableForDomain, assignments, upToIncluding)
 
 	if err != nil {
 		t.Fail()

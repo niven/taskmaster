@@ -29,17 +29,6 @@ func Update(minion Minion) error {
 	if err != nil {
 		return err
 	}
-	// split by domain
-	assignmentsForDomain := make(map[uint32][]TaskAssignment)
-	for _, assignment := range assignments {
-
-		domainID := assignment.Task.DomainID
-		if assignmentsForDomain[domainID] == nil {
-			assignmentsForDomain[domainID] = []TaskAssignment{assignment}
-		} else {
-			assignmentsForDomain[domainID] = append(assignmentsForDomain[domainID], assignment)
-		}
-	}
 
 	availableForDomain := make(map[uint32][]Task)
 
@@ -57,7 +46,7 @@ func Update(minion Minion) error {
 		availableForDomain[domain.ID] = available
 	}
 
-	tasksToAssign, err := assignTasks(minion, domains, availableForDomain, assignmentsForDomain, today)
+	tasksToAssign, err := assignTasks(minion, domains, availableForDomain, assignments, today)
 	if err != nil {
 		return err
 	}
@@ -71,14 +60,14 @@ func Update(minion Minion) error {
 	return nil
 }
 
-func assignTasks(minion Minion, domains []Domain, availableForDomain map[uint32][]Task, assignmentsForDomain map[uint32][]TaskAssignment, upToIncluding time.Time) ([]TaskAssignment, error) {
+func assignTasks(minion Minion, domains []Domain, availableForDomain map[uint32][]Task, assignments []TaskAssignment, upToIncluding time.Time) ([]TaskAssignment, error) {
 
 	var result []TaskAssignment
 
 	for _, domain := range domains {
 
 		available := availableForDomain[domain.ID]
-		assignments := assignmentsForDomain[domain.ID]
+		assignments := TaskAssignmentFilter(assignments, func(ta TaskAssignment) bool { return ta.Task.DomainID == domain.ID })
 
 		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue laundry
 		available = filterTasks(available, assignments)
