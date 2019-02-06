@@ -2,7 +2,17 @@ package data
 
 import (
 	"testing"
+	"time"
 )
+
+func TestNewTaskAssignment(t *testing.T) {
+
+	today := time.Now()
+	ta := NewTaskAssignment(Task{ID: 3}, Minion{ID: 4}, today)
+	if ta.Task.ID != 3 || ta.MinionID.Int64 != 4 || !ta.AssignedDate.Time.Equal(today) {
+		t.Fail()
+	}
+}
 
 func TestTaskAssignmentFilter(t *testing.T) {
 
