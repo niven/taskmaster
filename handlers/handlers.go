@@ -162,11 +162,7 @@ func OverviewHandler(c *gin.Context) {
 	}
 
 	// get all tasks for each domain: everything pending (for today/this week) & today's task
-	pendingTaskAssignments, err := db.AssignmentRetrieveForMinion(minion, false)
-	if err != nil {
-		ErrorHandler(c, "", err)
-		return
-	}
+	pendingTaskAssignments := db.AssignmentRetrieveForMinion(minion, false)
 
 	// split in Today, This Week, Overdue
 	now := time.Now()
@@ -238,8 +234,8 @@ func TaskDoneHandler(c *gin.Context) {
 		return
 	}
 
-	assignment, err := db.AssignmentRetrieve(int64(taskAssignmentID))
-	if err != nil {
+	assignment := db.AssignmentRetrieve(int64(taskAssignmentID))
+	if assignment == nil {
 		ErrorHandler(c, "No such assignment", err)
 		return
 	}
@@ -250,7 +246,7 @@ func TaskDoneHandler(c *gin.Context) {
 		assignment.Status = DoneAndStashed
 	}
 
-	db.AssignmentUpdate(assignment)
+	db.AssignmentUpdate(*assignment)
 
 	c.JSON(http.StatusOK, nil)
 }

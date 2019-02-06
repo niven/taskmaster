@@ -253,22 +253,23 @@ func AssignmentDelete(assignment TaskAssignment) error {
 	return nil
 }
 
-func AssignmentRetrieve(taskAssignmentID int64) (TaskAssignment, error) {
+func AssignmentRetrieve(taskAssignmentID int64) *TaskAssignment {
 
-	var result TaskAssignment
+	var result *TaskAssignment
 
 	row := db.QueryRow("SELECT id, task_id, assigned_on, status, CURRENT_DATE - assigned_on AS days_old FROM task_assignments WHERE id = $1", taskAssignmentID)
 
-	if err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.Status, &result.AgeInDays); err != nil {
+	err := row.Scan(result.ID, result.Task.ID, result.AssignedDate, result.Status, result.AgeInDays)
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("Error scanning assignment: %q", err)
-		return result, err
+		return nil
 	}
 
-	return result, nil
+	return result
 }
 
 // Retrieve all pending tasks for a minion, across all domains
-func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAssignment, error) {
+func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) []TaskAssignment {
 
 	var result []TaskAssignment
 
@@ -280,7 +281,7 @@ func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAs
 	rows, err := db.Query(sql, minion.ID)
 	if err != nil {
 		log.Printf("Error reading pending tasks: %q", err)
-		return result, err
+		return nil
 	}
 
 	defer rows.Close()
@@ -289,10 +290,10 @@ func AssignmentRetrieveForMinion(minion Minion, includeCompleted bool) ([]TaskAs
 
 		if err := rows.Scan(&ta.ID, &ta.Task.ID, &ta.AssignedDate, &ta.AgeInDays, &ta.Status, &ta.Task.DomainID, &ta.Task.Name, &ta.Task.Weekly, &ta.Task.Description); err != nil {
 			log.Printf("Error scanning task: %q", err)
-			return result, err
+			return nil
 		}
 		result = append(result, ta)
 	}
 
-	return result, nil
+	return result
 }

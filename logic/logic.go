@@ -25,10 +25,7 @@ func Update(minion Minion) error {
 
 	domains := db.GetDomainsForMinion(minion)
 
-	assignments, err := db.AssignmentRetrieveForMinion(minion, true)
-	if err != nil {
-		return err
-	}
+	assignments := db.AssignmentRetrieveForMinion(minion, true)
 
 	availableForDomain := make(map[uint32][]Task)
 
