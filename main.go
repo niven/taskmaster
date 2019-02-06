@@ -22,8 +22,8 @@ var store = cookie.NewStore([]byte("secret"))
 
 func setupRouting(router *gin.Engine) {
 
-	router.Static("/static", "static")
-	router.Static("/favicon.ico", "static/favicon.ico")
+	router.Static("/static", "./static")
+	router.StaticFile("/favicon.ico", "./static/favicon.ico")
 
 	router.GET("/", IndexHandler)
 
