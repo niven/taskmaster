@@ -50,6 +50,20 @@ func NewTaskAssignment(task Task, minion Minion, time time.Time) TaskAssignment 
 	return result
 }
 
+// both these are the same, but no generics...
+
+func TaskAssignmentFilter(assignments []TaskAssignment, condition func(t TaskAssignment) bool) []TaskAssignment {
+
+	var result []TaskAssignment
+	for _, t := range assignments {
+		if condition(t) == true {
+			result = append(result, t)
+		}
+	}
+
+	return result
+}
+
 func TaskFilter(tasks []Task, condition func(t Task) bool) []Task {
 
 	var result []Task
