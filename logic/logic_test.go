@@ -10,6 +10,29 @@ import (
 	. "github.com/niven/taskmaster/util"
 )
 
+func TestAssignTasks(t *testing.T) {
+
+	domains := []Domain{
+		Domain{ID: 1},
+		Domain{ID: 2},
+	}
+	availableForDomain := make(map[uint32][]Task)
+	availableForDomain[1] = []Task{Task{ID: 999}}
+	assignmentsForDomain := make(map[uint32][]TaskAssignment)
+	upToIncluding := time.Now() // nothing is assigned, so no gap filling, so just 1 task per domain. The available one and the NoTask
+
+	assignments, err := assignTasks(Minion{ID: 1}, domains, availableForDomain, assignmentsForDomain, upToIncluding)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	if len(assignments) != 2 {
+		t.Fail()
+	}
+
+}
+
 func TestAssignTasksForDomainSimple(t *testing.T) {
 
 	minion := Minion{ID: 1}
