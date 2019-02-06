@@ -2,7 +2,6 @@ package logic
 
 import (
 	"errors"
-	"log"
 	"math/rand"
 	"strings"
 	"time"
@@ -45,7 +44,6 @@ func Update(minion Minion) error {
 	availableForDomain := make(map[uint32][]Task)
 
 	for _, domain := range domains {
-		log.Printf("Updating %s\n", domain.Name)
 
 		// Avoid resetting every domain every time we run Update() on the 1st of the month
 		if today.Day() == 1 && domain.LastResetDate.Month() != today.Month() {
@@ -127,7 +125,7 @@ func SplitTaskAssignments(pendingTaskAssignments []TaskAssignment, now time.Time
 	var today, thisWeek, overdue []TaskAssignment
 
 	for _, assignment := range pendingTaskAssignments {
-		log.Printf("date: %s, age:%d\n", util.StrDateFromTime(assignment.AssignedDate.Time), assignment.AgeInDays)
+
 		if assignment.AgeInDays == 0 {
 			today = append(today, assignment)
 			continue
