@@ -174,15 +174,7 @@ func TestSplitTaskAssignments(t *testing.T) {
 	}
 
 	today, thisWeek, overdue := SplitTaskAssignments(pending, now)
-	for _, ta := range today {
-		log.Printf("today: %v\n", StrDateFromTime(ta.AssignedDate.Time))
-	}
-	for _, ta := range thisWeek {
-		log.Printf("week: %v\n", StrDateFromTime(ta.AssignedDate.Time))
-	}
-	for _, ta := range overdue {
-		log.Printf("overdue: %v\n", StrDateFromTime(ta.AssignedDate.Time))
-	}
+
 	if len(today) != 3 { // 2 for today + 1 weekly for today
 		t.Fail()
 	}
