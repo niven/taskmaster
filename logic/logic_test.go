@@ -33,6 +33,36 @@ func TestAssignTasks(t *testing.T) {
 
 }
 
+func TestAssignTasksForDomainNoRepeat(t *testing.T) {
+
+	minion := Minion{ID: 1}
+	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 2)
+
+	repeatTaskID := uint32(234)
+	available := []Task{
+		Task{ID: repeatTaskID},
+	}
+	assigned := []TaskAssignment{
+		TaskAssignment{
+			Task:         Task{ID: repeatTaskID},
+			AssignedDate: pq.NullTime{Valid: true, Time: start},
+		},
+		TaskAssignment{
+			Task:         Task{ID: 345},
+			AssignedDate: pq.NullTime{Valid: true, Time: end},
+		},
+	}
+
+	additional, err := assignTasksForDomain(minion, available, assigned, end)
+	if err != nil {
+		t.Fail()
+	}
+	if len(additional) != 0 {
+		t.Fail()
+	}
+}
+
 func TestAssignTasksForDomainSimple(t *testing.T) {
 
 	minion := Minion{ID: 1}
