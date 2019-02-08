@@ -33,32 +33,35 @@ func TestAssignTasks(t *testing.T) {
 
 }
 
-func TestAssignTasksForDomainNoRepeat(t *testing.T) {
+func TestAssignTasksNoRepeat(t *testing.T) {
 
-	minion := Minion{ID: 1}
 	start := time.Date(2009, time.November, 10, 23, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 2)
 
 	repeatTaskID := uint32(234)
 	available := []Task{
-		Task{ID: repeatTaskID},
+		Task{ID: repeatTaskID, DomainID: 1},
 	}
 	assigned := []TaskAssignment{
 		TaskAssignment{
-			Task:         Task{ID: repeatTaskID},
+			Task:         Task{ID: repeatTaskID, DomainID: 1},
 			AssignedDate: pq.NullTime{Valid: true, Time: start},
 		},
 		TaskAssignment{
-			Task:         Task{ID: 345},
+			Task:         Task{ID: 345, DomainID: 1},
 			AssignedDate: pq.NullTime{Valid: true, Time: end},
 		},
 	}
 
-	additional, err := assignTasksForDomain(minion, available, assigned, end)
+	availableForDomain := make(map[uint32][]Task)
+	availableForDomain[1] = available
+
+	assignments, err := assignTasks(Minion{ID: 1}, []Domain{Domain{ID: 1}}, availableForDomain, assigned, end)
+
 	if err != nil {
 		t.Fail()
 	}
-	if len(additional) != 0 {
+	if len(assignments) != 1 || assignments[0].Task.ID != NoTask.ID {
 		t.Fail()
 	}
 }

@@ -64,10 +64,19 @@ func assignTasks(minion Minion, domains []Domain, availableForDomain map[uint32]
 	for _, domain := range domains {
 
 		available := availableForDomain[domain.ID]
+
+		// for convenience, keep only the ones for this domain
 		assignments := TaskAssignmentFilter(assignments, func(ta TaskAssignment) bool { return ta.Task.DomainID == domain.ID })
 
 		// filter out tasks we alread have pending. No need to get laundry assigned after having overdue laundry
-		available = filterTasks(available, assignments)
+		available = TaskFilter(available, func(t Task) bool {
+			for _, assigment := range assignments {
+				if assigment.Task.ID == t.ID {
+					return false
+				}
+			}
+			return true
+		})
 
 		additional, err := assignTasksForDomain(minion, available, assignments, upToIncluding)
 		if err != nil {
