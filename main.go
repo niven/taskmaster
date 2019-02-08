@@ -42,6 +42,7 @@ func setupRouting(router *gin.Engine) {
 	{
 		domain.POST("/new", DomainNewHandler)
 		domain.GET("/edit/:domain_id", DomainEditHandler)
+		domain.GET("/delete/:domain_id", DomainDeleteHandler)
 	}
 
 	task := router.Group("/task")

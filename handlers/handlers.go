@@ -336,6 +336,39 @@ func DomainNewHandler(c *gin.Context) {
 	SetupHandler(c)
 }
 
+func DomainDeleteHandler(c *gin.Context) {
+
+	session := sessions.Default(c)
+	userEmail := session.Get("user-id").(string)
+	var minion Minion
+	found := db.LoadMinion(userEmail, &minion)
+	if !found {
+		ErrorHandler(c, "User authenticated but not found", nil)
+		return
+	}
+
+	domainID, err := strconv.Atoi(c.Param("domain_id"))
+	if err != nil || domainID < 0 {
+		ErrorHandler(c, "Invalid domain ID", err)
+		return
+	}
+
+	domain, err := db.GetDomainByID(uint32(domainID))
+	if err != nil || domain.Owner != minion.ID {
+		ErrorHandler(c, "Domain not found", err)
+		return
+	}
+
+	db.DomainDelete(domain)
+
+	domains := db.GetDomainsForMinion(minion)
+
+	c.HTML(http.StatusOK, "setup.tmpl.html", gin.H{
+		"minion":  minion,
+		"domains": domains,
+	})
+}
+
 func ErrorHandler(c *gin.Context, message string, err error) {
 
 	c.HTML(http.StatusBadRequest, "error.tmpl.html", gin.H{

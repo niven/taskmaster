@@ -114,6 +114,15 @@ func GetDomainsForMinion(m Minion) []Domain {
 	return result
 }
 
+func DomainDelete(domain Domain) {
+
+	_, err := db.Exec("DELETE FROM domains WHERE id = $1", domain.ID)
+
+	if err != nil {
+		log.Printf("Error in query: %q", err)
+	}
+}
+
 func ReadAllMinions() ([]Minion, error) {
 
 	rows, err := db.Query("SELECT * FROM minions")
