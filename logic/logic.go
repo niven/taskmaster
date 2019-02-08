@@ -143,54 +143,6 @@ func SplitTaskAssignments(pendingTaskAssignments []TaskAssignment, now time.Time
 }
 
 /*
-	Available:
-		Foo x2
-		Bar x3
-		Rez x1
-	Assigned:
-		Foo
-		Foo
-		Bar
-		Qux
-
-	Output:
-		Bar x2
-		Rez x1
-*/
-func filterTasks(available []Task, assigned []TaskAssignment) []Task {
-
-	if assigned == nil || len(assigned) == 0 {
-		return available
-	}
-
-	// store ones we have
-	hash := make(map[uint32]*Task)
-	for idx, task := range available {
-		hash[task.ID] = &available[idx]
-	}
-
-	// update their availability count
-	for _, assignment := range assigned {
-		task, exists := hash[assignment.Task.ID]
-		// Count is an unsigned int, avoid underflowing
-		if exists && task.Count > 0 {
-			task.Count--
-		}
-		// ignore ones that are assigned and not available
-	}
-
-	// output all tasks that have a Count > 0
-	var result []Task
-	for _, task := range hash {
-		if task.Count > 0 {
-			result = append(result, *task)
-		}
-	}
-
-	return result
-}
-
-/*
 	For every day that doesn't have an assigned task, pick one from the available ones
 */
 func fillGapsWithTasks(minion Minion, assigned []TaskAssignment, available []Task, upToIncluding time.Time) ([]TaskAssignment, error) {
