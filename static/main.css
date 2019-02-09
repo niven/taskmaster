@@ -125,6 +125,11 @@ button, a, input[type="submit"], li.task_assignment {
 	transform: skewX(-20deg);
 }
 
+li.task_assignment span, a span, button span {
+	display: inline-block;
+	transform: skewX(20deg);
+}
+
 button:hover, a:hover, input[type="submit"]:hover, li.task_assignment:hover {
 	background-color: deepskyblue;
 }
@@ -195,6 +200,10 @@ ul#today {
 
 ul#today li {
 	font-size: 150%;
+}
+
+li#all_done {
+	text-align: center;
 }
 
 /************** Modal stuff down below ***********************/

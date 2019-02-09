@@ -10,11 +10,11 @@
 {{ if .pending }}		
 
 {{range .pending }}
-	<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
+	<li class="task_assignment" task-assignment-id="{{ .ID }}"><span>{{ .Task.Name }}</span></li>
 {{end}}
 
 {{ else }}
-	<li>All done!</li>
+	<li id="all_done">All done!</li>
 {{ end }}
 	</ul>
 	
@@ -28,7 +28,7 @@
 			<h1>Overdue</h1>
 			<ul id="overdue_items">
 			{{range .overdue }}
-				<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
+				<li class="task_assignment" task-assignment-id="{{ .ID }}"><span>{{ .Task.Name }}</span></li>
 			{{end}}
 			</ul>
 		</div>
@@ -41,7 +41,7 @@
 			<h1>This Week</h1>
 			<ul id="week_items">
 			{{range .this_week }}
-				<li class="task_assignment" task-assignment-id="{{ .ID }}">{{ .Task.Name }}</li>
+				<li class="task_assignment" task-assignment-id="{{ .ID }}"><span>{{ .Task.Name }}</span></li>
 			{{end}}
 			</ul>
 		</div>
@@ -57,9 +57,9 @@
      <!-- things that scroll -->
 
 		<h1 id="modal-task-title">TASK</h1>
-		<button id="done-return-button" class="modal-button">Done &amp; Return</button>
-		<button id="done-stash-button" class="modal-button">Done &amp; Stash</button>
-		<button id="close-button" class="modal-button">Close</button>
+		<button id="done-return-button" class="modal-button"><span>Done &amp; Return</span></button>
+		<button id="done-stash-button" class="modal-button"><span>Done &amp; Stash</span></button>
+		<button id="close-button" class="modal-button"><span>Close</span></button>
    </div>
 	
 </div>

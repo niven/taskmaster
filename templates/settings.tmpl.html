@@ -5,13 +5,13 @@
 		Logged in as {{ .minion.Name }}<br>
 			<small>({{ .minion.Email }})</small>
 			<p>
-				<a href="/today" style="display: inline-block">Today</a>
-				<a href="/setup" style="display: inline-block">Setup</a>
+				<a href="/today" style="display: inline-block"><span>Today</span></a>
+				<a href="/setup" style="display: inline-block"><span>Setup</span></a>
 			</p>
 			<h1>My Domains</h1>
 			<ul class="domains">
 			{{range .domains }}
-				<li> <a href="/domain/edit/{{ .ID }}">{{ .Name }}</a></li>
+				<li> <a href="/domain/edit/{{ .ID }}"><span>{{ .Name }}</span></a></li>
 			{{end}}
 			</ul>
 					</div>
