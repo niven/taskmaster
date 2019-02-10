@@ -133,26 +133,28 @@ go get github.com/lib/pq
 
 ##### Table Definitions
 
-DROP TABLE IF EXISTS minions CASCADE; CREATE TABLE IF NOT EXISTS minions (id SERIAL PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, name VARCHAR(255) NOT NULL ); \d+ minions
+Moved to database/update_NNN.sql
+Automatically run with
 
-DROP TABLE IF EXISTS domains CASCADE; CREATE TABLE IF NOT EXISTS domains (id SERIAL PRIMARY KEY, owner INTEGER REFERENCES minions(id), name VARCHAR(255) NOT NULL, last_reset_date DATE NOT NULL DEFAULT CURRENT_DATE ); \d+ domains
+	go run database/db_manage.go
 
-DROP TABLE IF EXISTS tasks CASCADE; CREATE TABLE IF NOT EXISTS tasks (id SERIAL PRIMARY KEY, domain_id INTEGER REFERENCES domains(id), name VARCHAR(255) NOT NULL, weekly BOOLEAN DEFAULT false, description TEXT, count INTEGER NOT NULL DEFAULT 1); \d+ tasks
-
-DROP TYPE IF EXISTS enum_status CASCADE; CREATE TYPE enum_status AS ENUM ('pending', 'done_and_stashed', 'done_and_available');
-DROP TABLE IF EXISTS task_assignments; CREATE TABLE IF NOT EXISTS task_assignments (id SERIAL PRIMARY KEY, task_id INTEGER REFERENCES tasks(id), minion_id INTEGER REFERENCES minions(id), assigned_on DATE NOT NULL, status enum_status default 'pending'); \d+ task_assignments
-
-##### System data
-
-INSERT INTO minions (id, email, name) VALUES(0,'unused','System');
-INSERT INTO domains (id, owner, name) VALUES(0,0,'System');
-
+That will pick up any changes to the db newer than the update point in the "version" table.
+If there is no version, update_000.sql and any higher will run, effectiveky doing a clean db setup
 
 ##### Test Data
 
 INSERT INTO minions (id, email, name) VALUES (1, 'gru@minions.com', 'Gru');
 INSERT INTO domains (owner, name) VALUES (1, 'Tree House');
 INSERT INTO tasks (domain_id, name, weekly) VALUES (1, 'Remove leaves', false), (1, 'Wash window', true);
+
+#### drop tables for testing
+DROP TABLE IF EXISTS task_assignments;
+DROP TYPE IF EXISTS enum_status;
+DROP TABLE IF EXISTS tasks;
+DROP TABLE IF EXISTS minion_domain;
+DROP TABLE IF EXISTS domains;
+DROP TABLE IF EXISTS minions;
+DROP TABLE IF EXISTS version;
 
 
 # Ideas
