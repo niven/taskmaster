@@ -10,7 +10,7 @@
 <div class="deck">
 <h1>Tasks for {{ .domain.Name }}</h2>
 	
-{{if or (not .daily) (not .weekly) }} 
+{{if and (not .daily) (not .weekly) }} 
 <p>This Deck doesn't have any chores</p>
 {{else}}
 
