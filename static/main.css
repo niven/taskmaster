@@ -111,7 +111,8 @@ button {
    margin: 2ex auto;
 }
 
-input[type="text"] {
+
+input[type="text"], input[type="number"], input[type="checkbox"] {
 	
 	padding: 0.2em 1em;
 	border-color: silver;
@@ -121,6 +122,19 @@ input[type="text"] {
 	transform: skewX(-20deg);
 	
 }
+
+input[type="submit"] {
+	padding: 0.2em 1em;
+}
+
+input[type="number"] {
+    width: 4em;
+}
+
+input[type="checkbox"] {
+	transform: scale(3);
+	margin: 0 0.5em;
+} 
 
 button, a, input[type="submit"], li.task_assignment {
    cursor: pointer;
@@ -156,9 +170,6 @@ ul.domains a.delete {
 	width: 4em;
 }
 
-input[type=number]{
-    width: 2.5em;
-} 
 
 #settings {
 	display: flex;
