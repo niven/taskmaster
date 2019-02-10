@@ -111,6 +111,17 @@ button {
    margin: 2ex auto;
 }
 
+input[type="text"] {
+	
+	padding: 0.2em 1em;
+	border-color: silver;
+	border-width: 2px;
+	border-style: outset;
+	border-radius: 0.2em;
+	transform: skewX(-20deg);
+	
+}
+
 button, a, input[type="submit"], li.task_assignment {
    cursor: pointer;
 	background: oldlace;
