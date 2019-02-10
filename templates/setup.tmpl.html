@@ -11,13 +11,16 @@
 <fieldset>
 <legend>My Domains</legend>
 
-{{if not .domains}} 
-You don't have any Decks set up!
-{{else}}
 
 <ul class="domains">
+{{if not .domains}} 
+	<li>You don't have any Decks set up!</li>
+{{else}}
+
 {{range .domains }}
 	<li><a href="/domain/edit/{{ .ID }}">{{ .Name }} ({{ .TaskCount }} tasks)</a> <a href="/domain/delete/{{ .ID }}" class="delete">Delete</a></li>
+{{end}}
+
 {{end}}
 	<li>
 		<form method="post" action="/domain/new">
@@ -27,7 +30,6 @@ You don't have any Decks set up!
 	</li>
 </ul>
 
-{{end}}
 
 </fieldset>
 
