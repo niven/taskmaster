@@ -264,17 +264,25 @@ func AssignmentDelete(assignment TaskAssignment) error {
 
 func AssignmentRetrieve(taskAssignmentID int64) *TaskAssignment {
 
-	var result *TaskAssignment
+	var result TaskAssignment
 
 	row := db.QueryRow("SELECT id, task_id, assigned_on, status, CURRENT_DATE - assigned_on AS days_old FROM task_assignments WHERE id = $1", taskAssignmentID)
+	log.Printf("row: %v\n", row)
+	if row == nil {
+		log.Println("rowNIL")
+	}
 
-	err := row.Scan(result.ID, result.Task.ID, result.AssignedDate, result.Status, result.AgeInDays)
-	if err != nil && err != sql.ErrNoRows {
-		log.Printf("Error scanning assignment: %q", err)
+	err := row.Scan(&result.ID, &result.Task.ID, &result.AssignedDate, &result.Status, &result.AgeInDays)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("No task assignment with ID: %d", taskAssignmentID)
+		} else {
+			log.Printf("Error scanning assignment: %q", err)
+		}
 		return nil
 	}
 
-	return result
+	return &result
 }
 
 // Retrieve all pending tasks for a minion, across all domains
