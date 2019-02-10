@@ -306,17 +306,11 @@ func TaskNewHandler(c *gin.Context) {
 		return
 	}
 
-	tasks, err := db.GetTasksForDomain(domain)
-	if err != nil {
-		ErrorHandler(c, "Domain not found", err)
-		return
-	}
+	// add the domain ID to the params so we can chain to another handler
+	// A redirect is kind of weird, and DomainEdit doesn't accept a POST anyway
+	c.Params = append(c.Params, gin.Param{Key: "domain_id", Value: paramDomainID})
+	DomainEditHandler(c)
 
-	c.HTML(http.StatusOK, "domain.tmpl.html", gin.H{
-		"minion": minion,
-		"domain": domain,
-		"tasks":  tasks,
-	})
 }
 
 func DomainNewHandler(c *gin.Context) {
