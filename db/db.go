@@ -149,11 +149,11 @@ func ReadAllMinions() ([]Minion, error) {
 
 func ResetAllCompletedTasks(domain Domain) error {
 
-	result, err := db.Exec("DELETE FROM task_assignments WHERE status != 'pending' AND domain_id = $1", domain.ID)
+	_, err := db.Exec("DELETE FROM task_assignments WHERE status != 'pending' AND domain_id = $1", domain.ID)
 	if err != nil {
 		return err
 	}
-	result, err = db.Exec("UPDATE domains SET last_reset_date = CURRENT_DATE WHERE id = $1", domain.ID)
+	_, err = db.Exec("UPDATE domains SET last_reset_date = CURRENT_DATE WHERE id = $1", domain.ID)
 	if err != nil {
 		return err
 	}
