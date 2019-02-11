@@ -64,6 +64,7 @@ Other stuff: google-oauth, various gin contrib
 - heroku apps:create
 	- unnamed app since app names are global
 	- I got: https://peaceful-everglades-27897.herokuapp.com/ | https://git.heroku.com/peaceful-everglades-27897.git
+	- it will autodect we are Go and use the Go buildpack since we have vendor/vendor.json and .go files
 - git remote -v
 	heroku	https://git.heroku.com/peaceful-everglades-27897.git (fetch)
 	heroku	https://git.heroku.com/peaceful-everglades-27897.git (push)

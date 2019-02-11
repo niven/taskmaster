@@ -226,5 +226,8 @@
 			"revisionTime": "2018-11-15T11:05:04Z"
 		}
 	],
-	"rootPath": "github.com/niven/taskmaster"
+	"rootPath": "github.com/niven/taskmaster",
+   "heroku": {
+          "install" : [ "./..." ]
+	}
 }
