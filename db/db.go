@@ -158,12 +158,6 @@ func ResetAllCompletedTasks(domain Domain) error {
 		return err
 	}
 
-	count, err := result.RowsAffected()
-	if err == nil {
-		log.Printf("Reset %d tasks\n", count)
-	} else {
-		return err
-	}
 	return nil
 }
 
