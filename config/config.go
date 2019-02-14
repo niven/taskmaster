@@ -9,6 +9,7 @@ import (
 var (
 	environmentVarNames = []string{
 		"DATABASE_URL",
+		"BASE_URL",
 		"PORT",
 		"TASKMASTER_OAUTH_CLIENT_SECRET",
 	}

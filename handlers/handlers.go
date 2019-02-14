@@ -31,7 +31,7 @@ func init() {
 	conf = &oauth2.Config{
 		ClientID:     "406866902910-omkqfc94h59m45a3120j6k6duic3masd.apps.googleusercontent.com",
 		ClientSecret: config.EnvironmentVars["TASKMASTER_OAUTH_CLIENT_SECRET"],
-		RedirectURL:  "http://taskmaster.org:5000/auth",
+		RedirectURL:  config.EnvironmentVars["BASE_URL"] + "auth",
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/userinfo.profile",

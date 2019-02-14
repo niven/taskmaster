@@ -96,11 +96,25 @@ Then enter that one as the Authorized Domains for your OAuth stuff
 Note: the UI is garbage, you need to hit enter to add new items to a list and then click a save button
 
 
+#### Setup config vars
+
+DATABASE_URL is set by the addon
+PORT is set by the platform
+
+heroku config:set TASKMASTER_OAUTH_CLIENT_SECRET=.....
+
+// note fish shell doesn't need $(command)
+heroku config:set BASE_URL=(heroku apps:info -s  | grep web_url | cut -d= -f2)
+
+
+heroku config
+
 #### Running locally
 
 set -x DATABASE_URL postgres://localhost/taskmaster\?sslmode=disable
 set -x PORT 5000
 set -x TASKMASTER_OAUTH_CLIENT_SECRET ...
+set -x BASE_URL http://taskmaster.org:5000/
 
 go run main.go taskmaster.go handlers.go
 
